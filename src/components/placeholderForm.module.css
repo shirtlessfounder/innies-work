@@ -1,0 +1,53 @@
+.managementFormGrid {
+  display: grid;
+  grid-template-columns: repeat(2, minmax(0, 1fr));
+  gap: 12px 14px;
+}
+
+.managementField {
+  display: flex;
+  flex-direction: column;
+  gap: 8px;
+  min-width: 0;
+  font-size: 11px;
+  letter-spacing: 0.14em;
+  text-transform: uppercase;
+  color: var(--console-ink-soft);
+}
+
+.managementFieldWide,
+.managementActionRow {
+  grid-column: 1 / -1;
+}
+
+.managementInput {
+  appearance: none;
+  width: 100%;
+  min-height: 42px;
+  padding: 0 12px;
+  border-radius: 10px;
+  border: 1px solid var(--console-line);
+  background: rgba(248, 251, 253, 0.24);
+  color: var(--console-ink);
+  font: inherit;
+  font-size: 12px;
+  letter-spacing: 0;
+  text-transform: none;
+}
+
+.managementInput::placeholder {
+  color: rgba(22, 51, 62, 0.42);
+}
+
+.managementInput:focus {
+  outline: none;
+  border-color: rgba(11, 114, 133, 0.34);
+  box-shadow: 0 0 0 1px rgba(11, 114, 133, 0.1);
+}
+
+.managementActionRow {
+  display: flex;
+  flex-wrap: wrap;
+  align-items: center;
+  gap: 8px;
+}

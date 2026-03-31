@@ -1,6 +1,7 @@
 import Image from 'next/image';
 import { LandingHeroHeader } from '../components/LandingHeroHeader';
 import { PlaceholderOrgCreationForm } from '../components/PlaceholderOrgCreationForm';
+import { LandingProductsTable } from '../components/LandingProductsTable';
 import styles from './page.module.css';
 
 export default function DashboardIndexPage() {
@@ -23,7 +24,6 @@ export default function DashboardIndexPage() {
           height={320}
           priority
         />
-        <div className={styles.heroPreviewLabel}>Click to preview</div>
       </div>
     </div>
   );
@@ -32,15 +32,16 @@ export default function DashboardIndexPage() {
     <main className={styles.page}>
       <div className={styles.shell}>
         <div className={styles.console}>
-          <LandingHeroHeader brandSuffix="(BETA)" />
+          <LandingHeroHeader />
 
           <section className={styles.hero}>
             <div className={styles.heroInner}>
-              <a href="/innies" className={styles.frame} aria-label="Open innies dashboard">
+              <div className={styles.frame}>
                 {heroFrame}
-              </a>
+              </div>
 
               <PlaceholderOrgCreationForm />
+              <LandingProductsTable />
             </div>
           </section>
         </div>

@@ -16,6 +16,13 @@ test('project scaffold files exist', () => {
   assert.equal(existsSync(fileUrl('tsconfig.json')), true);
   assert.equal(existsSync(fileUrl('next.config.mjs')), true);
   assert.equal(existsSync(fileUrl('src/app/layout.tsx')), true);
+  assert.equal(existsSync(fileUrl('src/app/favicon.ico')), true);
+  assert.equal(existsSync(fileUrl('src/app/favicon-16x16.png')), true);
+  assert.equal(existsSync(fileUrl('src/app/favicon-32x32.png')), true);
+  assert.equal(existsSync(fileUrl('src/app/apple-touch-icon.png')), true);
+  assert.equal(existsSync(fileUrl('src/app/android-chrome-192x192.png')), true);
+  assert.equal(existsSync(fileUrl('src/app/android-chrome-512x512.png')), true);
+  assert.equal(existsSync(fileUrl('src/app/site.webmanifest')), true);
 });
 
 test('landing page keeps the hero artwork static and renders the placeholder form', () => {

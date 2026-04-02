@@ -41,9 +41,10 @@ It should not optimize for:
 - admin archive session index
 - admin archive session events
 - admin archive request attempt drilldown
-- admin analysis session and request projections
 
 These surfaces are admin-only and are not safe to expose directly to the public web.
+
+For this feature, archive/session truth is sufficient. The analysis projection should stay out of scope because it is derived metadata, not transcript-grade conversation truth.
 
 ### `innies-work`
 
@@ -81,6 +82,16 @@ Redacting in `innies-work` would make the public microsite responsible for decid
 ### Why not use a precomputed cron snapshot first
 
 A cron-written snapshot would work, but it adds extra moving parts before the public feed contract is stable. A live feed with polling every 30 seconds is simpler, more flexible, and still comfortably within the requested latency budget.
+
+### Scope simplifications
+
+To keep the first version tight without meaningful product loss:
+
+- use archive/session truth only
+- ship one public feed only in v1
+- keep panel ranking/layout decisions in `innies-work`, not the API
+- poll and replace the full session list every 30 seconds
+- avoid a local `innies-work` proxy unless deployment or CORS constraints force one
 
 ## High-Level Flow
 
@@ -125,7 +136,8 @@ When a session reappears after being idle, the panel should preload recent trans
 The feed should include:
 
 - up to the last 1 hour of transcript history for that session
-- plus a boolean such as `isRevived` so the UI can optionally badge the panel
+
+The public API does not need an explicit `isRevived` field in v1. Reappearance plus recent warm history is enough to communicate revival.
 
 ## Transcript Model
 
@@ -137,7 +149,6 @@ The public transcript must feel real without exposing unsafe internal content.
 - final assistant responses
 - tool call messages
 - tool result messages
-- attempt status markers
 - provider/model switch markers
 
 ### Exclude
@@ -194,13 +205,11 @@ The `innies` public feed should:
     {
       "sessionKey": "openclaw:run:run_1",
       "sessionType": "openclaw",
-      "title": "openclaw",
-      "subtitle": "run_1",
+      "displayTitle": "openclaw · run_1",
       "startedAt": "2026-04-02T19:40:00.000Z",
       "lastActivityAt": "2026-04-02T20:14:41.000Z",
-      "isRevived": false,
-      "providerSet": ["anthropic", "openai"],
-      "modelSet": ["claude-opus-4-6", "gpt-5.4"],
+      "currentProvider": "openai",
+      "currentModel": "gpt-5.4",
       "entries": [
         {
           "entryId": "req_1:1:user:0",
@@ -236,11 +245,7 @@ The `innies` public feed should:
           "at": "2026-04-02T20:12:30.000Z",
           "text": "I found the mismatch and updated the migration."
         }
-      ],
-      "stats": {
-        "requestCount1h": 12,
-        "toolCallCount1h": 8
-      }
+      ]
     }
   ]
 }
@@ -282,21 +287,20 @@ Suggested derivation steps:
 - response message with final assistant text -> `assistant_final`
 - message content with tool call parts -> `tool_call`
 - message content with tool result parts -> `tool_result`
-- attempt boundary or attempt status -> `attempt_status`
 - provider/model changes across attempts -> `provider_switch`
 
-### Title and subtitle derivation
+Attempt status should remain an internal derivation aid in v1, not a public transcript row.
+
+### Display title derivation
 
 Each panel needs a readable public identity.
 
 Recommended shape:
 
-- `title`
-  - `openclaw`
-  - `cli claude`
-  - `cli codex`
-- `subtitle`
-  - a short public-safe session identifier like the run id tail or session key tail
+- one `displayTitle`
+  - `openclaw · run_1`
+  - `cli codex · abc123`
+  - `cli claude · req_42`
 
 This keeps panels understandable even when several concurrent sessions share the same session type.
 
@@ -387,11 +391,10 @@ This is the right trade-off for a proof-of-work wall because freshness matters m
 
 Each panel header should show:
 
-- session title
-- session subtitle
-- live/revived status
+- session display title
+- live status
 - last activity time
-- provider/model chips or compact badges
+- current provider/model chips or compact badges
 
 ### Panel body
 
@@ -402,7 +405,6 @@ The transcript body should show styled row types:
 - tool call rows
 - tool result rows
 - provider/model switch rows
-- attempt status rows when helpful
 
 This should feel closer to a wall of active terminals than a consumer chat UI.
 
@@ -416,6 +418,8 @@ Recommended client behavior:
 - repeat fetch every 30 seconds
 - replace local session list with latest server truth
 - preserve simple loading and failure states
+
+The frontend should call the Innies public feed directly by default. Add an `innies-work` pass-through route only if deployment constraints require it.
 
 ### Why polling is sufficient
 
@@ -497,6 +501,7 @@ Preferred validation:
 - exact raw archive drilldown on `innies-work`
 - websocket streaming
 - exposing chain-of-thought or private reasoning
+- public attempt-status transcript rows in v1
 
 ## Implementation Direction
 

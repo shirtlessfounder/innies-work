@@ -420,6 +420,13 @@
   padding: 10px 2px 6px;
 }
 
+.liveSectionSlot {
+  position: relative;
+  z-index: 1;
+  padding: 0 2px 28px;
+  margin-top: -28px;
+}
+
 .heroInner {
   --hero-frame-width: min(40vw, 500px);
   position: relative;
@@ -840,6 +847,11 @@
 
   .hero {
     padding: 0 2px 4px;
+  }
+
+  .liveSectionSlot {
+    margin-top: 0;
+    padding: 8px 2px 18px;
   }
 
   .heroInner {

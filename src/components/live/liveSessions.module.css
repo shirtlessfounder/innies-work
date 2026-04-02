@@ -1,0 +1,449 @@
+.liveSection {
+  display: flex;
+  flex-direction: column;
+  gap: 18px;
+  width: 100%;
+  padding: 20px;
+  border: 1px solid var(--console-line);
+  background:
+    linear-gradient(180deg, rgba(248, 251, 253, 0.78) 0%, rgba(238, 244, 248, 0.74) 100%),
+    radial-gradient(circle at top left, rgba(11, 114, 133, 0.08) 0%, rgba(11, 114, 133, 0) 36%);
+  box-shadow:
+    inset 0 1px 0 rgba(255, 255, 255, 0.74),
+    0 18px 38px rgba(22, 51, 62, 0.08);
+}
+
+.sectionHeader {
+  display: flex;
+  align-items: flex-start;
+  justify-content: space-between;
+  gap: 20px;
+}
+
+.sectionCopy {
+  display: flex;
+  flex-direction: column;
+  gap: 8px;
+}
+
+.sectionKicker {
+  margin: 0;
+  color: var(--console-ink-soft);
+  font-size: 11px;
+  letter-spacing: 0.22em;
+  text-transform: uppercase;
+}
+
+.sectionTitle {
+  margin: 0;
+  color: var(--console-ink);
+  font-size: clamp(20px, 2.2vw, 28px);
+  letter-spacing: -0.06em;
+  text-transform: lowercase;
+}
+
+.sectionDescription {
+  max-width: 620px;
+  margin: 0;
+  color: rgba(22, 51, 62, 0.78);
+  font-size: 12px;
+  line-height: 1.5;
+  letter-spacing: 0.04em;
+}
+
+.sectionStatus {
+  display: flex;
+  flex-direction: column;
+  align-items: flex-end;
+  gap: 8px;
+  min-width: 0;
+}
+
+.sectionStatusBadgeRow {
+  display: flex;
+  align-items: center;
+  justify-content: flex-end;
+  gap: 10px;
+  flex-wrap: wrap;
+}
+
+.sectionStatusBadge {
+  display: inline-flex;
+  align-items: center;
+  padding: 8px 12px;
+  border: 1px solid currentColor;
+  letter-spacing: 0.18em;
+  text-transform: uppercase;
+}
+
+.sectionStatus[data-tone='live'] {
+  color: var(--console-live);
+}
+
+.sectionStatus[data-tone='loading'] {
+  color: var(--console-accent);
+}
+
+.sectionStatus[data-tone='quiet'] {
+  color: rgba(22, 51, 62, 0.74);
+}
+
+.sectionStatus[data-tone='stale'],
+.sectionStatus[data-tone='error'] {
+  color: var(--console-error);
+}
+
+.sectionStatusNote,
+.sectionStatusMeta {
+  color: rgba(22, 51, 62, 0.72);
+  font-size: 11px;
+  letter-spacing: 0.08em;
+}
+
+.featuredGrid {
+  display: grid;
+  grid-template-columns: repeat(3, minmax(0, 1fr));
+  gap: 16px;
+}
+
+.panel,
+.stateFrame {
+  display: flex;
+  flex-direction: column;
+  min-height: 0;
+  border: 1px solid rgba(28, 62, 74, 0.18);
+  background:
+    linear-gradient(180deg, rgba(255, 255, 255, 0.92) 0%, rgba(245, 248, 251, 0.9) 100%);
+  box-shadow:
+    inset 0 1px 0 rgba(255, 255, 255, 0.78),
+    0 18px 30px rgba(22, 51, 62, 0.08);
+}
+
+.panelChrome,
+.stateFrameChrome {
+  display: flex;
+  align-items: flex-start;
+  justify-content: space-between;
+  gap: 16px;
+  padding: 14px 14px 12px;
+  border-bottom: 1px solid rgba(28, 62, 74, 0.12);
+  background:
+    linear-gradient(180deg, rgba(240, 246, 249, 0.96) 0%, rgba(232, 240, 245, 0.84) 100%);
+}
+
+.panelTraffic {
+  display: inline-flex;
+  align-items: center;
+  gap: 6px;
+  padding-top: 3px;
+}
+
+.panelLight {
+  width: 10px;
+  height: 10px;
+  border-radius: 999px;
+  box-shadow: inset 0 1px 0 rgba(255, 255, 255, 0.46);
+}
+
+.panelLightRed {
+  background: #f26b6b;
+}
+
+.panelLightAmber {
+  background: #d9a441;
+}
+
+.panelLightGreen {
+  background: #3ab57a;
+}
+
+.panelHeading {
+  display: flex;
+  flex: 1;
+  flex-direction: column;
+  gap: 10px;
+  min-width: 0;
+}
+
+.panelHeadingTop {
+  display: flex;
+  align-items: flex-start;
+  justify-content: space-between;
+  gap: 10px;
+}
+
+.panelTitle {
+  margin: 0;
+  color: var(--console-ink);
+  font-size: 13px;
+  letter-spacing: 0.08em;
+  text-transform: uppercase;
+  overflow-wrap: anywhere;
+}
+
+.panelLiveBadge {
+  display: inline-flex;
+  align-items: center;
+  padding: 4px 8px;
+  border: 1px solid rgba(15, 81, 50, 0.24);
+  color: var(--console-live);
+  font-size: 10px;
+  letter-spacing: 0.18em;
+  text-transform: uppercase;
+}
+
+.panelMeta {
+  display: flex;
+  align-items: center;
+  gap: 6px;
+  color: rgba(22, 51, 62, 0.68);
+  font-size: 11px;
+  letter-spacing: 0.08em;
+  text-transform: uppercase;
+}
+
+.panelMetaDivider {
+  color: rgba(22, 51, 62, 0.38);
+}
+
+.panelChips {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  flex-wrap: wrap;
+}
+
+.providerChip,
+.modelChip {
+  display: inline-flex;
+  align-items: center;
+  padding: 5px 8px;
+  border: 1px solid rgba(28, 62, 74, 0.14);
+  background: rgba(248, 251, 253, 0.68);
+  color: var(--console-ink);
+  font-size: 11px;
+  letter-spacing: 0.08em;
+}
+
+.modelChip {
+  color: var(--console-accent);
+}
+
+.panelBody {
+  overflow: auto;
+  display: flex;
+  flex-direction: column;
+  gap: 10px;
+  min-height: 300px;
+  max-height: 360px;
+  padding: 14px;
+  background:
+    linear-gradient(180deg, rgba(250, 252, 253, 0.86) 0%, rgba(243, 247, 250, 0.92) 100%);
+}
+
+.entryRow {
+  display: flex;
+  flex-direction: column;
+  gap: 8px;
+  padding: 10px 11px;
+  border: 1px solid rgba(28, 62, 74, 0.1);
+  background: rgba(255, 255, 255, 0.64);
+}
+
+.entryRow[data-kind='user'] {
+  border-left: 3px solid rgba(22, 51, 62, 0.4);
+}
+
+.entryRow[data-kind='assistant_final'] {
+  border-left: 3px solid rgba(15, 81, 50, 0.46);
+}
+
+.entryRow[data-kind='tool_call'] {
+  border-left: 3px solid rgba(11, 114, 133, 0.42);
+}
+
+.entryRow[data-kind='tool_result'] {
+  border-left: 3px solid rgba(154, 103, 0, 0.4);
+}
+
+.entryRow[data-kind='provider_switch'] {
+  border-left: 3px solid rgba(117, 91, 189, 0.34);
+}
+
+.entryHeader {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 12px;
+}
+
+.entryLabel,
+.entryTime {
+  color: rgba(22, 51, 62, 0.66);
+  font-size: 10px;
+  letter-spacing: 0.18em;
+  text-transform: uppercase;
+}
+
+.entryTime {
+  flex-shrink: 0;
+}
+
+.entryText,
+.toolCallArgs {
+  margin: 0;
+  color: var(--console-ink);
+  font-size: 12px;
+  line-height: 1.55;
+  white-space: pre-wrap;
+  overflow-wrap: anywhere;
+}
+
+.toolCallBlock,
+.providerSwitchBlock {
+  display: flex;
+  flex-direction: column;
+  gap: 8px;
+}
+
+.toolCallName {
+  color: var(--console-accent);
+  font-size: 12px;
+  letter-spacing: 0.14em;
+  text-transform: uppercase;
+}
+
+.providerSwitchBlock {
+  flex-direction: row;
+  align-items: center;
+  flex-wrap: wrap;
+  gap: 8px;
+  color: var(--console-ink);
+  font-size: 12px;
+  line-height: 1.4;
+  overflow-wrap: anywhere;
+}
+
+.providerSwitchArrow {
+  color: rgba(22, 51, 62, 0.38);
+}
+
+.providerSwitchTo {
+  color: var(--console-accent);
+}
+
+.overflowDetails {
+  border-top: 1px solid rgba(28, 62, 74, 0.14);
+  padding-top: 14px;
+}
+
+.overflowSummary {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 12px;
+  cursor: pointer;
+  color: var(--console-ink);
+  font-size: 12px;
+  letter-spacing: 0.16em;
+  text-transform: uppercase;
+  list-style: none;
+}
+
+.overflowSummary::-webkit-details-marker {
+  display: none;
+}
+
+.overflowCount {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  min-width: 32px;
+  padding: 6px 10px;
+  border: 1px solid rgba(28, 62, 74, 0.14);
+  background: rgba(248, 251, 253, 0.7);
+}
+
+.overflowGrid {
+  display: grid;
+  grid-template-columns: repeat(2, minmax(0, 1fr));
+  gap: 16px;
+  margin-top: 16px;
+  max-height: 520px;
+  overflow: auto;
+}
+
+.stateFrameBody {
+  display: flex;
+  flex-direction: column;
+  gap: 8px;
+  padding: 18px 16px 20px;
+}
+
+.stateFrameTitle,
+.stateFrameDetail {
+  margin: 0;
+  color: var(--console-ink);
+  overflow-wrap: anywhere;
+}
+
+.stateFrameTitle {
+  font-size: 14px;
+  letter-spacing: 0.14em;
+  text-transform: uppercase;
+}
+
+.stateFrameDetail {
+  color: rgba(22, 51, 62, 0.78);
+  font-size: 12px;
+  line-height: 1.6;
+}
+
+@media (max-width: 1120px) {
+  .featuredGrid,
+  .overflowGrid {
+    grid-template-columns: repeat(2, minmax(0, 1fr));
+  }
+}
+
+@media (max-width: 860px) {
+  .sectionHeader {
+    flex-direction: column;
+  }
+
+  .sectionStatus {
+    align-items: flex-start;
+  }
+
+  .featuredGrid,
+  .overflowGrid {
+    grid-template-columns: minmax(0, 1fr);
+  }
+}
+
+@media (max-width: 720px) {
+  .liveSection {
+    padding: 16px;
+  }
+
+  .panelChrome,
+  .stateFrameChrome {
+    padding: 12px 12px 10px;
+  }
+
+  .panelBody {
+    min-height: 260px;
+    padding: 12px;
+  }
+
+  .overflowSummary {
+    align-items: flex-start;
+  }
+}
+
+@media (prefers-reduced-motion: reduce) {
+  .panel,
+  .stateFrame {
+    scroll-behavior: auto;
+  }
+}

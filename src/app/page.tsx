@@ -2,6 +2,7 @@ import Image from 'next/image';
 import { LandingHeroHeader } from '../components/LandingHeroHeader';
 import { PlaceholderOrgCreationForm } from '../components/PlaceholderOrgCreationForm';
 import { LandingProductsTable } from '../components/LandingProductsTable';
+import { LiveSessionsSection } from '../components/live/LiveSessionsSection';
 import styles from './page.module.css';
 
 export default function DashboardIndexPage() {
@@ -44,6 +45,10 @@ export default function DashboardIndexPage() {
               <LandingProductsTable />
             </div>
           </section>
+
+          <div className={styles.liveSectionSlot}>
+            <LiveSessionsSection />
+          </div>
         </div>
       </div>
     </main>

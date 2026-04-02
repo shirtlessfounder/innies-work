@@ -1,12 +1,12 @@
+'use client';
+
+import { useEffect, useRef } from 'react';
 import type { PublicLiveSession, PublicLiveSessionEntry } from '../../lib/liveSessions/publicFeed';
 import styles from './liveSessions.module.css';
 
 const ENTRY_LABELS: Record<PublicLiveSessionEntry['kind'], string> = {
   user: 'user',
   assistant_final: 'assistant final',
-  tool_call: 'tool call',
-  tool_result: 'tool result',
-  provider_switch: 'provider switch',
 };
 
 function formatClockLabel(value: string) {
@@ -55,31 +55,7 @@ function renderEntryContent(entry: PublicLiveSessionEntry) {
   switch (entry.kind) {
     case 'user':
     case 'assistant_final':
-    case 'tool_result':
       return <p className={styles.entryText}>{entry.text || 'no public text'}</p>;
-    case 'tool_call':
-      return (
-        <div className={styles.toolCallBlock}>
-          <div className={styles.toolCallName}>{entry.toolName}</div>
-          <p className={styles.toolCallArgs}>{entry.argsText || 'no args captured'}</p>
-        </div>
-      );
-    case 'provider_switch': {
-      const fromTarget = entry.fromProvider
-        ? `${entry.fromProvider}${entry.fromModel ? ` / ${entry.fromModel}` : ''}`
-        : 'route pending';
-      const toTarget = `${entry.toProvider} / ${entry.toModel}`;
-
-      return (
-        <div className={styles.providerSwitchBlock}>
-          <span className={styles.providerSwitchFrom}>{fromTarget}</span>
-          <span className={styles.providerSwitchArrow} aria-hidden="true">
-            {'->'}
-          </span>
-          <span className={styles.providerSwitchTo}>{toTarget}</span>
-        </div>
-      );
-    }
     default:
       return null;
   }
@@ -91,6 +67,29 @@ type LiveSessionPanelProps = {
 };
 
 export function LiveSessionPanel({ session, emphasis = 'featured' }: LiveSessionPanelProps) {
+  const panelBodyRef = useRef<HTMLDivElement | null>(null);
+  const shouldAutoFollowRef = useRef(true);
+  const latestEntryId = session.entries.at(-1)?.entryId ?? '';
+
+  useEffect(() => {
+    const panelBody = panelBodyRef.current;
+    if (!panelBody || !shouldAutoFollowRef.current) {
+      return;
+    }
+
+    panelBody.scrollTop = panelBody.scrollHeight;
+  }, [latestEntryId]);
+
+  function handlePanelBodyScroll() {
+    const panelBody = panelBodyRef.current;
+    if (!panelBody) {
+      return;
+    }
+
+    const distanceFromBottom = panelBody.scrollHeight - panelBody.scrollTop - panelBody.clientHeight;
+    shouldAutoFollowRef.current = distanceFromBottom <= 24;
+  }
+
   return (
     <article className={styles.panel} data-emphasis={emphasis}>
       <div className={styles.panelChrome}>
@@ -125,7 +124,7 @@ export function LiveSessionPanel({ session, emphasis = 'featured' }: LiveSession
         </div>
       </div>
 
-      <div className={styles.panelBody}>
+      <div ref={panelBodyRef} className={styles.panelBody} onScroll={handlePanelBodyScroll}>
         {session.entries.length > 0 ? (
           session.entries.map((entry) => (
             <section key={entry.entryId} className={styles.entryRow} data-kind={entry.kind}>
@@ -139,7 +138,7 @@ export function LiveSessionPanel({ session, emphasis = 'featured' }: LiveSession
             </section>
           ))
         ) : (
-          <section className={styles.entryRow} data-kind="provider_switch">
+          <section className={styles.entryRow} data-kind="assistant_final">
             <div className={styles.entryHeader}>
               <span className={styles.entryLabel}>workspace idle</span>
             </div>

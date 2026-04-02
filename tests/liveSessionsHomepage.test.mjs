@@ -32,15 +32,18 @@ test('live sessions section polls the public feed and exposes featured plus over
   assert.ok(feedSource.includes('NEXT_PUBLIC_INNIES_API_BASE_URL'));
 });
 
-test('live session panel supports the public transcript row kinds and panel wall styling', () => {
+test('live session panel narrows the public transcript to user and assistant rows and follows the latest message by default', () => {
   const panelSource = readSource('src/components/live/LiveSessionPanel.tsx');
   const stylesSource = readSource('src/components/live/liveSessions.module.css');
+  const feedSource = readSource('src/lib/liveSessions/publicFeed.ts');
 
   assert.ok(panelSource.includes("'assistant_final'"));
-  assert.ok(panelSource.includes("'tool_call'"));
-  assert.ok(panelSource.includes("'tool_result'"));
-  assert.ok(panelSource.includes("'provider_switch'"));
+  assert.ok(panelSource.includes("'use client'"));
+  assert.ok(panelSource.includes('scrollTop = panelBody.scrollHeight'));
+  assert.ok(panelSource.includes('onScroll={handlePanelBodyScroll}'));
+  assert.ok(!feedSource.includes("'tool_call'"));
+  assert.ok(!feedSource.includes("'tool_result'"));
+  assert.ok(!feedSource.includes("'provider_switch'"));
   assert.ok(stylesSource.includes('.panelBody'));
   assert.ok(stylesSource.includes('overflow: auto;'));
-  assert.ok(stylesSource.includes('.featuredGrid'));
 });

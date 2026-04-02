@@ -2,33 +2,12 @@ export const PUBLIC_LIVE_SESSIONS_PATH = '/v1/public/innies/live-sessions';
 
 export type PublicLiveSessionTextEntry = {
   entryId: string;
-  kind: 'user' | 'assistant_final' | 'tool_result';
+  kind: 'user' | 'assistant_final';
   at: string;
   text: string;
 };
 
-export type PublicLiveSessionToolCallEntry = {
-  entryId: string;
-  kind: 'tool_call';
-  at: string;
-  toolName: string;
-  argsText: string;
-};
-
-export type PublicLiveSessionProviderSwitchEntry = {
-  entryId: string;
-  kind: 'provider_switch';
-  at: string;
-  fromProvider: string | null;
-  toProvider: string;
-  fromModel: string | null;
-  toModel: string;
-};
-
-export type PublicLiveSessionEntry =
-  | PublicLiveSessionTextEntry
-  | PublicLiveSessionToolCallEntry
-  | PublicLiveSessionProviderSwitchEntry;
+export type PublicLiveSessionEntry = PublicLiveSessionTextEntry;
 
 export type PublicLiveSession = {
   sessionKey: string;
@@ -81,44 +60,12 @@ function readEntry(value: unknown): PublicLiveSessionEntry | null {
   switch (kind) {
     case 'user':
     case 'assistant_final':
-    case 'tool_result':
       return {
         entryId,
         kind,
         at,
         text: readString(value.text),
       };
-    case 'tool_call': {
-      const toolName = readString(value.toolName);
-      if (!toolName) {
-        return null;
-      }
-
-      return {
-        entryId,
-        kind,
-        at,
-        toolName,
-        argsText: readString(value.argsText),
-      };
-    }
-    case 'provider_switch': {
-      const toProvider = readString(value.toProvider);
-      const toModel = readString(value.toModel);
-      if (!toProvider || !toModel) {
-        return null;
-      }
-
-      return {
-        entryId,
-        kind,
-        at,
-        fromProvider: readNullableString(value.fromProvider),
-        toProvider,
-        fromModel: readNullableString(value.fromModel),
-        toModel,
-      };
-    }
     default:
       return null;
   }

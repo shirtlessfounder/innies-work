@@ -44,3 +44,22 @@ test('percent v2 header preserves source branding and links', () => {
   assert.ok(headerSource.includes('http://discord.gg/zcombinator'));
   assert.ok(headerSource.includes('https://x.com/percentmarkets'));
 });
+
+test('percent v2 proposal header preserves source tabs and PFG copy', () => {
+  const proposalHeaderSource = readSource('src/components/percentV2/ProposalHeader.tsx');
+
+  assert.ok(proposalHeaderSource.includes('TWAP Pass-Fail Gap (PFG)'));
+  assert.ok(proposalHeaderSource.includes('Trade'));
+  assert.ok(proposalHeaderSource.includes('Description'));
+});
+
+test('percent v2 trade history preserves source table headings', () => {
+  const tableSource = readSource('src/components/percentV2/TradeHistoryTable.tsx');
+
+  assert.ok(tableSource.includes('Trader'));
+  assert.ok(tableSource.includes('Bet'));
+  assert.ok(tableSource.includes('Type'));
+  assert.ok(tableSource.includes('Amount'));
+  assert.ok(tableSource.includes('Tx'));
+  assert.ok(tableSource.includes('Age'));
+});

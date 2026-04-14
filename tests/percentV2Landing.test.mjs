@@ -63,3 +63,22 @@ test('percent v2 trade history preserves source table headings', () => {
   assert.ok(tableSource.includes('Tx'));
   assert.ok(tableSource.includes('Age'));
 });
+
+test('percent v2 action controls preserve the source entry shell', () => {
+  const entrySource = readSource('src/components/percentV2/MarketEntryControls.tsx');
+
+  assert.ok(entrySource.includes('MAX'));
+  assert.ok(entrySource.includes('Enter / Exit'));
+  assert.ok(entrySource.includes('Enter Market'));
+  assert.ok(entrySource.includes('Exit Market'));
+});
+
+test('percent v2 route composes the full source shell', () => {
+  const pageSource = readSource('src/app/v2/page.tsx');
+
+  assert.ok(pageSource.includes('Header'));
+  assert.ok(pageSource.includes('ProposalHeader'));
+  assert.ok(pageSource.includes('TradingInterface'));
+  assert.ok(pageSource.includes('TradeHistoryTable'));
+  assert.ok(pageSource.includes('w-[352px]'));
+});

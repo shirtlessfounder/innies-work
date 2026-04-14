@@ -1,9 +1,19 @@
+'use client';
+
+import { useState } from 'react';
 import { Header } from '../../components/percentV2/Header';
+import { MarketEntryControls } from '../../components/percentV2/MarketEntryControls';
 import { MarketPanel } from '../../components/percentV2/MarketPanel';
 import { ProposalHeader } from '../../components/percentV2/ProposalHeader';
 import { TradeHistoryTable } from '../../components/percentV2/TradeHistoryTable';
+import { TradingInterface } from '../../components/percentV2/TradingInterface';
 
 export default function PercentV2Page() {
+  const [selectedMarket, setSelectedMarket] = useState<'pass' | 'fail'>('pass');
+  const [marketMode, setMarketMode] = useState<'enter' | 'exit'>('enter');
+  const [amount, setAmount] = useState('1.00');
+  const [selectedToken, setSelectedToken] = useState<'sol' | 'zc'>('sol');
+
   return (
     <main className="min-h-screen bg-[#0a0a0a] text-white">
       <div className="flex h-screen bg-[#0a0a0a]">
@@ -19,6 +29,23 @@ export default function PercentV2Page() {
                 </div>
               </div>
               <TradeHistoryTable />
+            </div>
+            <div className="w-[352px] p-8 overflow-y-auto">
+              <div className="sticky top-0 space-y-6">
+                <MarketEntryControls
+                  marketMode={marketMode}
+                  amount={amount}
+                  selectedToken={selectedToken}
+                  onAmountChange={setAmount}
+                  onTokenChange={setSelectedToken}
+                  onMarketModeChange={setMarketMode}
+                  onMaxClick={() => setAmount(selectedToken === 'sol' ? '12.345' : '125000')}
+                />
+                <TradingInterface
+                  selectedMarket={selectedMarket}
+                  onMarketChange={setSelectedMarket}
+                />
+              </div>
             </div>
           </div>
         </div>

@@ -26,9 +26,8 @@ test('v2 live tab mounts the old innies monitor activity rail instead of the car
   assert.ok(railSource.includes("const [selectedStream, setSelectedStream] = useState<ActivityRailStream>('live_sessions');"));
   assert.ok(railSource.includes('LIVE ACTIVITY'));
   assert.ok(railSource.includes('activity rail'));
-  assert.ok(railSource.includes('LIVE SESSIONS'));
-  assert.ok(railSource.includes('LATEST PROMPTS'));
-  assert.ok(railSource.includes('ARCHIVE TRAIL'));
+  assert.ok(railSource.includes('styles.dockTabs'));
+  assert.ok(railSource.includes('findPreferredActivityRailStream'));
 });
 
 test('v2 live tab ports the old monitor route, hook, and activity-feed contract', () => {

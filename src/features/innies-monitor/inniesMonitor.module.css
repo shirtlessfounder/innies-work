@@ -1,0 +1,121 @@
+.moduleTitle {
+  margin: 0;
+  font-size: clamp(28px, 4vw, 52px);
+  line-height: 0.92;
+  letter-spacing: -0.08em;
+  text-transform: lowercase;
+}
+
+.groupDetail,
+.placeholderDetail {
+  margin: 0;
+  font-size: 13px;
+  line-height: 1.6;
+  color: rgba(24, 53, 63, 0.76);
+}
+
+.moduleBadge {
+  display: inline-flex;
+  align-items: center;
+  gap: 10px;
+  padding: 8px 12px;
+  border: 1px solid var(--shell-line-strong, rgba(20, 53, 64, 0.26));
+  background: rgba(255, 255, 255, 0.46);
+  font-size: 11px;
+  letter-spacing: 0.16em;
+  text-transform: uppercase;
+}
+
+.moduleBadgeLive {
+  color: #14532d;
+  border-color: rgba(20, 83, 45, 0.22);
+}
+
+.placeholderMeta {
+  font-size: 11px;
+  letter-spacing: 0.12em;
+  color: rgba(24, 53, 63, 0.78);
+}
+
+.moduleFrame {
+  display: flex;
+  flex-direction: column;
+  gap: 16px;
+  min-height: 100%;
+}
+
+.moduleHeader {
+  display: flex;
+  align-items: flex-start;
+  justify-content: space-between;
+  gap: 12px;
+}
+
+.moduleEyebrow,
+.groupLabel,
+.placeholderEyebrow {
+  font-size: 11px;
+  letter-spacing: 0.18em;
+  text-transform: uppercase;
+  color: rgba(24, 53, 63, 0.58);
+}
+
+.groupStack,
+.cardStack {
+  display: flex;
+  flex-direction: column;
+  gap: 12px;
+}
+
+.groupPanel,
+.placeholderCard {
+  border: 1px solid var(--shell-line, rgba(20, 53, 64, 0.14));
+  background: var(--shell-panel-strong, rgba(248, 251, 253, 0.88));
+  padding: 14px;
+}
+
+.placeholderCard[data-tone='live'] {
+  border-color: rgba(20, 83, 45, 0.22);
+}
+
+.placeholderCard[data-tone='warn'] {
+  border-color: rgba(154, 103, 0, 0.24);
+}
+
+.placeholderTitle {
+  margin: 6px 0 0;
+  font-size: 18px;
+  line-height: 1.15;
+  color: #16333d;
+}
+
+.dockTabs {
+  display: flex;
+  gap: 8px;
+  flex-wrap: wrap;
+}
+
+.dockTab {
+  display: flex;
+  flex-direction: column;
+  gap: 4px;
+  min-width: 180px;
+  padding: 10px 12px;
+  border: 1px solid var(--shell-line, rgba(20, 53, 64, 0.14));
+  background: rgba(255, 255, 255, 0.42);
+  color: inherit;
+  font: inherit;
+  text-align: left;
+  cursor: pointer;
+}
+
+.dockTab[data-active='true'] {
+  border-color: rgba(15, 114, 134, 0.36);
+  background: rgba(255, 255, 255, 0.7);
+}
+
+.dockTabSummary {
+  font-size: 11px;
+  letter-spacing: 0.08em;
+  color: rgba(24, 53, 63, 0.6);
+}

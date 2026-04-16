@@ -1,272 +1,337 @@
-# V2 Live Monitor Activity Literal Port Design
+# V2 Live Sessions Literal Restoration Design
 
 Date: 2026-04-15
-Target: `/Users/dylanvu/.config/superpowers/worktrees/innies-work/percent-v2-clone`
+Primary frontend target: `/Users/dylanvu/.config/superpowers/worktrees/innies-work/percent-v2-clone`
+Supporting backend target: `/Users/dylanvu/innies`
 Route: `/v2`
 Tab: `watch-me-work.md`
-Intent: literal `1:1` port of the old Innies monitor activity feed shape into the current live-tab mount
+Intent: literal restoration of the old live experience the user was pointing at, including both correct Innies live-session visibility and the old `LIVE CLI SESSIONS` carousel presentation
+
+## Status
+
+This spec supersedes the earlier rail-only version of this document.
+
+That earlier direction was incomplete. It correctly identified the old merged monitor feed shape, but it locked the wrong primary renderer. The user clarified that the real target is the old `LIVE CLI SESSIONS` scrollable carousel of session panels, not the tabbed `ActivityRailModule` as the main `/v2` surface.
 
 ## Goal
 
-Replace the current `/v2` live tab session-card carousel with the exact old Innies monitor activity flow that felt right before:
+Restore the old `/v2` live experience `1:1`:
 
-- one `live_sessions` heartbeat item per active lane
-- separate `latest_prompts` items underneath
-- `archive_trail` context alongside the live feed
+- Innies must surface real active Codex work as live sessions
+- `/v2` must render the old horizontal `LIVE CLI SESSIONS` carousel as the primary live surface
+- the merged monitor contract must still preserve:
+  - `live_sessions`
+  - `latest_prompts`
+  - `archive_trail`
+- `archive_trail` must remain visible as separate historical context instead of being discarded or shoved into the live cards
 
-The target is not “similar semantics” and not “same data, new UI.” The target is a literal behavioral port of the old monitor activity stack, with only the smallest repo-local rewiring needed to run inside this worktree.
+This is not a visual refresh and not a semantic approximation. The target is the old behavior the user saw before.
+
+## Proven Root Cause
+
+The current broken state is not mainly a `/v2` UI bug.
+
+The user had real active Codex sessions. Those requests were recorded and archived, but the public live-session feed still returned zero sessions.
+
+Concrete evidence from the current system:
+
+- public feed returned zero sessions at `2026-04-16T01:59:45.076Z`
+- a real archived request, `req_1776304775724_82603`, completed at `2026-04-16T01:59:54.864Z`
+- that request was archived with:
+  - `requestSource: "direct"`
+  - `providerSelectionReason: "fallback_provider_selected"`
+- admin archive drilldown for that request showed stored request and response content
+
+That proves:
+
+1. the sessions were real
+2. ingestion was happening
+3. the public live-session builder dropped real active work
+
+### Backend Failure Mode
+
+There are two visibility lanes:
+
+1. projected admin sessions
+2. public direct-session backfill
+
+`direct` traffic is intentionally excluded from admin session projection, so visibility for those requests depends entirely on the public backfill path.
+
+The deployed public live-session service is too narrow:
+
+- it reads only archived direct attempts
+- it keys them primarily by `prompt_cache_key`
+- if that key is missing, the local fallback only accepts `cli_provider_pinned`
+- the traced missing requests were `fallback_provider_selected`
+
+So current active Codex fallback traffic can be archived successfully and still disappear from `/v1/public/innies/live-sessions`.
+
+## Correct Product Shape
+
+The old good experience was a composite:
+
+1. a merged monitor feed contract
+2. a live-session carousel renderer
+3. a separate archive/context surface
+
+The old merged contract matters because it split one live screen into three streams:
+
+- one heartbeat item per active lane in `live_sessions`
+- prompt/event rows in `latest_prompts`
+- archived summaries plus bounded archive events in `archive_trail`
+
+The old carousel matters because the main visual surface the user is asking for was not the tabbed rail. It was the horizontally scrollable `LIVE CLI SESSIONS` panel carousel that turned `live_sessions` plus `latest_prompts` into one card per active lane.
+
+`archive_trail` still belongs on the page, but not inside those cards.
 
 ## Source Of Truth
 
-The port must copy behavior from these recovered old Innies monitor files:
+### Backend behavior source
+
+Use the current Innies backend surface, fixed at the public live-session layer:
+
+- `/Users/dylanvu/innies/api/src/services/publicInnies/publicLiveSessionsService.ts`
+- `/Users/dylanvu/innies/api/src/routes/publicInnies.ts`
+
+### Merged monitor feed source
+
+Use the recovered old monitor route and merger as the `/v2` data seam:
 
 - `/Users/dylanvu/innies/.worktrees/agent-innies-monitor-activity-route/ui/src/app/api/innies/monitor/activity/route.ts`
 - `/Users/dylanvu/innies/.worktrees/agent-innies-monitor-activity-route/ui/src/lib/inniesMonitor/server.ts`
 - `/Users/dylanvu/innies/.worktrees/agent-innies-monitor-activity-rail/ui/src/hooks/useInniesMonitorActivity.ts`
 - `/Users/dylanvu/innies/.worktrees/agent-innies-monitor-activity-rail/ui/src/features/innies-monitor/adapters/activityFeed.ts`
-- `/Users/dylanvu/innies/.worktrees/agent-innies-monitor-activity-rail/ui/src/features/innies-monitor/modules/ActivityRailModule.tsx`
 
-These old files define the exact contract and renderer that must be reproduced. Current `percent-v2-clone` files are only a partial lift and are not the source of truth where they differ.
+### Literal live carousel source
 
-## Current Drift To Remove
+Use the old live-session carousel as the primary `/v2` visual target:
 
-The current worktree already lifted part of the old stack, but it drifted in ways that matter:
+- `/Users/dylanvu/innies/.worktrees/innies-v2-demo-copy/ui/src/features/innies-v2-demo/components/new-ui/LiveSessionsCarousel.tsx`
 
-- `src/components/live/LiveSessionsCarousel.tsx` collapses the feed back into one card per session
-- `archive_trail` is ignored by the renderer
-- `tool_call` and `tool_result` are filtered to fit the carousel model
-- `src/hooks/useInniesMonitorActivity.ts` polls every `2_000ms` instead of `7_500ms`
-- the current route accepts a `window` query, which the old monitor route did not
-- the current item model carries `buyerApiKeyId`, which the old monitor payload did not
-- the current server softens archive requirements and falls back to live-only behavior, while the old server used the original stricter contract
+This source is the one that contains the explicit `LIVE CLI SESSIONS` header and the horizontal session panel carousel behavior.
 
-All of this drift must be removed.
+### Archive/context surface source
+
+Use the old monitor activity/context modules for the supporting historical surface:
+
+- `/Users/dylanvu/innies/.worktrees/innies-v2-demo-copy/ui/src/features/innies-monitor/modules/ActivityRailModule.tsx`
+- `/Users/dylanvu/innies/.worktrees/innies-v2-demo-copy/ui/src/features/innies-monitor/adapters/activityFeed.ts`
+
+These are no longer the primary live-session surface, but they still define how `archive_trail` should be derived and presented.
 
 ## Scope
 
 Included:
 
-- literal port of the old monitor activity route, server normalizer, client hook, adapter, and rail UI behavior
-- replacement of the current live-tab carousel mount with the old activity rail model
-- minimal styling and import rewiring required to make the old rail run in this repo
-- test updates that lock the old rail behavior instead of the current carousel behavior
+- fix Innies live-session visibility for active archived direct fallback traffic
+- preserve the old merged `/api/innies/monitor/activity` contract for `/v2`
+- replace the current `/v2` live-tab primary renderer with the old `LIVE CLI SESSIONS` horizontal carousel
+- keep `archive_trail` visible as a separate context surface in the same `/v2` tab
+- remove the tabbed rail as the primary live renderer
+- stop using the current public one-card-per-session panel wall in `/v2`
 
 Excluded:
 
-- preserving `buyerApiKeyId` in the monitor payload
-- preserving the current `window` query parameter or `window="24h"` tab prop
-- keeping the current carousel as a fallback, companion, or hybrid mode
-- adding new filtering, grouping, pagination, or personalization not present in the old monitor stack
-- fixing unrelated `/v2` tab work or unrelated dirty files in the worktree
+- new live-session heuristics beyond what is needed to restore missing visibility
+- redesigning the old carousel look
+- introducing a hybrid mode that keeps both the tabbed rail and the carousel as first-class live surfaces
+- changing unrelated analytics/chart panels
+- changing prod deployment or infra automatically
 
 ## Recommended Approach
 
-Transplant the old monitor stack directly and let the current `/v2` live tab act only as the host surface.
+Do the fix in two stages, backend first.
 
-Why this is the right approach:
+### Stage 1: Innies backend truth repair
 
-- the user requirement is literal `1:1`, not approximation
-- the exact old source files have been recovered locally
-- the current partial lift already proved that rebuilding from the live-session wall causes drift
-- the old stack already solves the real shape problem by separating session heartbeat, prompt/event trail, and archive context
+Fix the public live-session service so real active direct Codex fallback traffic can become a visible session instead of being silently dropped.
+
+This must happen first because `/v2` is only trustworthy if the source feed is trustworthy.
+
+### Stage 2: `/v2` literal UI restoration
+
+Keep the merged monitor route and poller, but replace the current primary mounted surface with a composite UI:
+
+- top or primary module: old `LIVE CLI SESSIONS` carousel
+- supporting module: archive/context view built from `archive_trail`
+
+This preserves the old feel the user is pointing at without regressing to the raw public session wall.
 
 ## Architecture
 
-### Live Tab Host
+## 1. Innies Backend
 
-Keep the current `/v2` tab routing:
+### Current architecture
 
-- `src/components/vscodeV2/TabContent.tsx`
-- `src/components/live/InniesV2LiveSessionsTab.tsx`
+Today:
 
-But change the mounted content so the tab renders the old activity rail flow instead of `LiveSessionsCarousel`.
+- projected admin sessions cover `openclaw`, `cli-claude`, and `cli-codex`
+- `direct` requests are excluded from admin session grouping
+- public live sessions are supposed to backfill that direct lane
+- the backfill currently drops some real requests
 
-The `/v2` shell remains the outer host. The inner live-tab content becomes the old monitor activity rail.
+### Target architecture
 
-### Backend Contract
+The public live-session service must treat archived `direct` requests as visible live candidates even when:
 
-Port the old route and server behavior exactly:
+- `providerSelectionReason === "fallback_provider_selected"`
+- `prompt_cache_key` is absent
+
+The service must still avoid inventing unrelated groupings, but it must stop requiring the current overly narrow key derivation.
+
+### Backend behavior requirements
+
+- active direct requests that are archived within the live window must produce visible sessions
+- `fallback_provider_selected` direct requests must not be dropped purely because they are not `cli_provider_pinned`
+- if multiple attempts belong to the same logical direct session, they should still group stably
+- the service must remain public-safe and continue using sanitized public text only
+- existing admin-projected sessions must continue to work unchanged
+
+## 2. `/v2` Monitor Feed Contract
+
+`/v2` should keep using the merged monitor feed route:
 
 - `GET /api/innies/monitor/activity`
-- no `window` query parameter
-- `cache-control: no-store`
-- response payload shape:
-  - `generatedAt`
-  - `liveStatus`
-  - `items`
 
-The server must merge:
-
-- `/v1/public/innies/live-sessions`
-- `/v1/admin/archive/sessions`
-- bounded `/v1/admin/archive/sessions/:sessionKey/events`
-
-And flatten them into exactly three streams:
+That route must continue to flatten upstream sources into:
 
 - `live_sessions`
 - `latest_prompts`
 - `archive_trail`
 
-### Old Server Semantics To Preserve
+The old monitor semantics that matter must remain:
 
-The port must preserve these old semantics:
+- `cache-control: no-store`
+- `7.5s` client polling cadence
+- stale/degraded preservation of last good payload
+- bounded archive session and event fan-out
+- no raw public session wall semantics in the UI layer
 
-- strict env-driven config
-- no optional live-only archive fallback
-- global `MAX_ACTIVITY_ITEMS = 160` trim after sort
-- archive fan-out bounded by:
-  - `ARCHIVE_SESSION_LIMIT = 12`
-  - `ARCHIVE_EVENT_SESSION_FANOUT = 6`
-  - `ARCHIVE_EVENTS_PER_SESSION_LIMIT = 8`
-- `liveStatus` derived from the old stale/degraded rules
-- item model fields limited to the old set:
-  - `id`
-  - `stream`
-  - `kind`
-  - `occurredAt`
-  - `title`
-  - `detail`
-  - `sessionKey`
-  - `sessionType`
-  - `provider`
-  - `model`
-  - `status`
-  - `href`
+## 3. `/v2` Primary UI Surface
 
-Notably, the old payload did not include `buyerApiKeyId`, so the port must not invent or preserve it.
+### Primary live module
 
-### Client Polling
+The mounted `/v2` live tab must render a local lifted version of the old `LiveSessionsCarousel`.
 
-Port the old client hook behavior exactly:
+That component must:
 
-- `INNIES_MONITOR_ACTIVITY_POLL_INTERVAL_MS = 7_500`
-- `STALE_GRACE_PERIOD_MS = poll interval * 2`
-- initial load shows `loading`
-- last good payload is preserved through one stale cycle
-- failures degrade the feed instead of blanking immediately
-- polling hits `/api/innies/monitor/activity` with `cache: 'no-store'`
+- read `useInniesMonitorActivity()`
+- build one card per `live_sessions` item
+- join matching `latest_prompts` items by `sessionKey`
+- filter `tool_call` and `tool_result` from the visible card trail, matching the old component behavior
+- sort cards by latest activity
+- render a horizontal scroll surface
+- preserve per-card vertical transcript scrolling
+- preserve the explicit `LIVE CLI SESSIONS` heading
 
-The hook should match the old monitor behavior, not the current live-tab hook signature.
+### Supporting archive surface
 
-### Activity Rail Adapter
+`archive_trail` must remain visible in the live tab, but not inside the live cards.
 
-Port the old adapter logic that transforms the payload into three sections:
+The supporting archive surface can be a slimmed local module derived from the old activity/context rail behavior, but its job is only:
 
-- `LIVE SESSIONS`
-- `LATEST PROMPTS`
-- `ARCHIVE TRAIL`
+- archive session summaries
+- bounded archive event rows
+- degraded/loading/empty archive state
 
-The adapter must preserve:
+The supporting surface must not replace the carousel as the main live UI.
 
-- old section order
-- old section summaries
-- old empty-state titles and details
-- old tone mapping
-- old “preferred section” selection behavior when some streams are empty
+## UI Drift To Remove
 
-This adapter is what prevents the UI from collapsing back to “one card per chat.”
+The current worktree contains two wrong directions:
 
-### Activity Rail UI
+1. tabbed activity rail as the primary live tab UI
+2. public panel wall / grid of public sessions
 
-Port the old `ActivityRailModule` behavior exactly:
+Both are wrong for the approved target.
 
-- segmented stream tabs
-- live-status badge
-- summary line showing poll cadence, freshness, and degraded error text
-- one list surface for the currently selected stream
-- row/card rendering for entries derived from the adapter
-- exact old empty-state logic for `loading`, `degraded`, and empty sections
+The final `/v2` live tab should feel like:
 
-This is the old shape that felt smoother. The tab must stop rendering horizontal session cards entirely.
+- `LIVE CLI SESSIONS` horizontal session panels first
+- archive context alongside or below
+- no “pick one stream tab first” requirement
+- no one-card-per-public-session wall
 
-## Repo-Local Adaptations Allowed
+## File Ownership
 
-Only non-behavioral adaptations are allowed:
+### Innies backend
 
-- import path rewrites to match this repo layout
-- extensionless TypeScript imports where this repo requires them
-- local relocation of the module CSS used by the old rail
-- local formatting helper extraction if the old module depended on helpers not present here
+- Modify: `/Users/dylanvu/innies/api/src/services/publicInnies/publicLiveSessionsService.ts`
+- Possibly modify: `/Users/dylanvu/innies/api/tests/publicLiveSessionsService.test.ts`
 
-These are compatibility rewires, not design changes.
+### `/v2` merged monitor seam
 
-## CSS Strategy
+- Modify: `/Users/dylanvu/.config/superpowers/worktrees/innies-work/percent-v2-clone/src/app/api/innies/monitor/activity/route.ts`
+- Modify: `/Users/dylanvu/.config/superpowers/worktrees/innies-work/percent-v2-clone/src/lib/inniesMonitor/server.ts`
+- Modify: `/Users/dylanvu/.config/superpowers/worktrees/innies-work/percent-v2-clone/src/hooks/useInniesMonitorActivity.ts`
 
-The old `ActivityRailModule` depended on `ui/src/features/innies-monitor/inniesMonitor.module.css`.
+### `/v2` primary UI
 
-This repo should port only the CSS selectors actually needed by the old rail module into a local CSS module, preserving the old visual treatment used by:
+- Modify: `/Users/dylanvu/.config/superpowers/worktrees/innies-work/percent-v2-clone/src/components/live/InniesV2LiveSessionsTab.tsx`
+- Create: `/Users/dylanvu/.config/superpowers/worktrees/innies-work/percent-v2-clone/src/components/live/LiveSessionsCarousel.tsx`
+- Create or modify: `/Users/dylanvu/.config/superpowers/worktrees/innies-work/percent-v2-clone/src/components/live/liveSessionsCarousel.module.css`
 
-- `moduleFrame`
-- `moduleHeader`
-- `moduleEyebrow`
-- `moduleTitle`
-- `moduleBadge`
-- `moduleBadgeLive`
-- `dockTabs`
-- `dockTab`
-- `dockTabSummary`
-- `groupStack`
-- `groupPanel`
-- `groupLabel`
-- `groupDetail`
-- `cardStack`
-- `placeholderCard`
-- `placeholderEyebrow`
-- `placeholderTitle`
-- `placeholderDetail`
-- `placeholderMeta`
+### `/v2` archive/context support
 
-The goal is to preserve the old rail presentation inside the `/v2` tab, not to keep the current carousel styling.
+- Create or modify: `/Users/dylanvu/.config/superpowers/worktrees/innies-work/percent-v2-clone/src/components/live/ArchiveTrailPanel.tsx`
+- Create or modify: `/Users/dylanvu/.config/superpowers/worktrees/innies-work/percent-v2-clone/src/features/innies-monitor/adapters/activityFeed.ts`
 
-## File Shape
+The current `ActivityRailModule.tsx` can be deleted, demoted, or mined for archive rendering pieces, but it should not remain the primary mounted live-tab renderer.
 
-Expected worktree changes:
+## Testing Strategy
 
-- Modify: `src/components/live/InniesV2LiveSessionsTab.tsx`
-- Remove or stop using: `src/components/live/LiveSessionsCarousel.tsx`
-- Remove or stop using: `src/components/live/liveSessionsCarousel.module.css`
-- Modify: `src/app/api/innies/monitor/activity/route.ts`
-- Modify: `src/lib/inniesMonitor/server.ts`
-- Modify: `src/hooks/useInniesMonitorActivity.ts`
-- Create: `src/features/innies-monitor/adapters/activityFeed.ts`
-- Create: `src/features/innies-monitor/modules/ActivityRailModule.tsx`
-- Create: `src/features/innies-monitor/inniesMonitor.module.css`
-- Modify: `tests/v2LiveSessionsTab.test.mjs`
+### Backend tests
 
-Possible env/runtime verification inputs:
+Add failing tests first in `innies` for:
 
-- `.env.local`
+- direct archived attempt with `fallback_provider_selected` becomes visible
+- direct archived attempt without `prompt_cache_key` still receives a stable visible session
+- visible direct session remains in-window and carries prompt trail rows
 
-## Testing
+### `/v2` source-level tests
 
-Source-level regression coverage should lock the literal-port boundary:
+Update the existing `/v2` test to assert the new literal target:
 
-- `InniesV2LiveSessionsTab` mounts the old activity rail path, not `LiveSessionsCarousel`
-- `useInniesMonitorActivity.ts` uses `7_500` polling and no `window` parameter
-- `route.ts` no longer normalizes or reads a `window` query
-- `server.ts` exposes only the old monitor item shape and old stream flattening behavior
-- `activityFeed.ts` defines the three old stream sections with the old labels and summaries
-- the live tab no longer filters the feed through session-card grouping code
+- `LIVE CLI SESSIONS` header is present
+- carousel joins `live_sessions` and `latest_prompts`
+- `archive_trail` supporting surface is present
+- tabbed rail-specific primary markers are absent
+- current public panel wall strings are absent from the `/v2` live tab host
 
-Runtime verification should cover:
+### Runtime verification
 
-- local route returns the merged three-stream payload with `cache-control: no-store`
-- degraded behavior preserves last good payload through one stale cycle
-- archive trail appears when admin env is present
-- the `/v2` live tab renders stream tabs and entry rows, not horizontal session cards
+After backend patch:
 
-## Risks And Constraints
+- verify `/v1/public/innies/live-sessions` returns visible sessions during active Codex work
+- verify `/api/innies/monitor/activity` includes corresponding `live_sessions` and `latest_prompts`
+- verify `http://localhost:3000/v2` renders the carousel with live cards instead of zero-state drift
 
-- The old server contract is stricter than the current partial lift. Missing archive env now fails differently, and that is part of the literal-port requirement.
-- The old monitor payload omitted `buyerApiKeyId`. Any current code depending on that field in the live tab must be removed, not adapted.
-- The old route worktree used a `.ts` import suffix that caused a build issue in that repo. The port should preserve behavior while adapting import syntax to this repo’s build conventions.
+## Risks
 
-## Acceptance Criteria
+### Session key stability
 
-The work is correct only if all of the following are true:
+The backend fix must choose a stable direct-session grouping rule without accidentally merging unrelated requests.
 
-- the `/v2` live tab no longer feels like a public live-session wall or a session carousel
-- the tab exposes the exact old three-stream model: `live_sessions`, `latest_prompts`, `archive_trail`
-- polling cadence and stale/degraded behavior match the old monitor hook
-- the route and server contract match the old monitor stack rather than the current partial lift
-- the implementation is a transplant of the recovered old source, not a new approximation
+### Dirty backend worktree
+
+`/Users/dylanvu/innies` is already dirty in the same area. Any patch must preserve existing user work and avoid reverting unrelated changes.
+
+### UI source mismatch
+
+There are now three similar but distinct UI surfaces in play:
+
+- old tabbed rail
+- public panel wall
+- old live-session carousel
+
+Implementation must use the right one for the right purpose or the product will drift again.
+
+## Success Criteria
+
+The fix is complete when all of the following are true:
+
+- active Codex sessions through Innies appear in `/v1/public/innies/live-sessions`
+- `/api/innies/monitor/activity` exposes `live_sessions`, `latest_prompts`, and `archive_trail` from real current traffic
+- `/v2` shows the old `LIVE CLI SESSIONS` horizontal carousel as the main live surface
+- `archive_trail` remains visible as supporting context
+- the tab no longer looks like the tabbed rail-first monitor or the raw public panel wall

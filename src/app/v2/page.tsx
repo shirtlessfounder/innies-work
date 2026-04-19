@@ -32,10 +32,8 @@ export default function LandingPage() {
           />
         </span>
       </h1>
-      <p className="mt-7 text-[14px] text-gray-500" style={monoStyle}>{'//'}What am I doing?</p>
-      <p className="mt-1 text-[14px] text-gray-300" style={monoStyle}>Experimenting and building products for the autonomous agents of the future and people using AI agents right now</p>
-      <p className="mt-[26px] text-[14px] text-gray-500" style={monoStyle}>{'//'}Thesis</p>
-      <p className="mt-1 text-[14px] text-gray-300" style={monoStyle}>The highest value economic actors of the future will be autonomous AI agents. Solving human needs and desire will unlock non-zero value, but will feel more like a slice rather than the whole. Think the &quot;pets&quot; industry vs. the human economy.</p>
+      <p className="mt-7 text-[14px] text-gray-500" style={monoStyle}>{'//'}Mission</p>
+      <p className="mt-1 text-[14px] text-gray-300" style={monoStyle}>I&apos;m building AI infrastructure that amplifies the uniqueness of each individual human&apos;s output, expanding its depth and breadth.</p>
       <p className="mt-[26px] text-[14px] text-gray-500" style={monoStyle}>{'//'}Try out and <a href="https://t.me/shirtlessfounder" target="_blank" rel="noopener noreferrer" className={productLinkClassName}>ask me</a> about any of these products:</p>
       <p className="mt-0.5 text-[14px] text-gray-300" style={monoStyle}>Product | One-liner | Links</p>
       <p className="mt-0.5 text-[14px] text-gray-300" style={monoStyle}>--- | --- | ---</p>

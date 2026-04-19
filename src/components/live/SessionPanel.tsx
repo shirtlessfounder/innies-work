@@ -13,7 +13,40 @@ type SessionPanelProps = {
   session: InniesLiveSession;
 };
 
-type RenderedEntry = { id: string; kind: 'system' | 'user' | 'assistant'; text: string; at: string };
+type RenderedEntry = {
+  id: string;
+  kind: 'system' | 'user' | 'assistant';
+  text: string;
+  at: string;
+  model: string | null;
+};
+
+/**
+ * Collapse a raw provider model string into the shortest conventional
+ * nickname a human would use in chat: `gpt-5.4`, `opus`, `sonnet`, etc.
+ * Falls back to the raw string (truncated) when it doesn't match any
+ * known family.
+ */
+function formatModelLabel(rawModel: string | null | undefined): string {
+  if (!rawModel) return 'assistant';
+  const model = rawModel.toLowerCase();
+
+  // Anthropic families (`claude-3-5-sonnet-20241022`, `claude-opus-4-*`).
+  if (model.includes('opus')) return 'opus';
+  if (model.includes('sonnet')) return 'sonnet';
+  if (model.includes('haiku')) return 'haiku';
+
+  // OpenAI families: preserve the generation prefix (`gpt-4`, `gpt-5.4`,
+  // `gpt-4o`, `o1`, `o3`).
+  const gptMatch = model.match(/^gpt-(\d+(?:\.\d+)?(?:-[a-z]+)?)/);
+  if (gptMatch) return `gpt-${gptMatch[1]}`;
+  const oSeriesMatch = model.match(/^(o\d+(?:-[a-z]+)?)/);
+  if (oSeriesMatch) return oSeriesMatch[1];
+
+  // Fallback: last 14 chars so ids stay legible without overflowing the
+  // label column.
+  return rawModel.length <= 14 ? rawModel : `…${rawModel.slice(-13)}`;
+}
 
 function formatClock(value: string): string {
   const ts = Date.parse(value);
@@ -93,7 +126,7 @@ function messageToEntries(turn: InniesLiveTurn, message: InniesLiveMessage): Ren
       role === 'system' ? 'system'
       : role === 'assistant' || message.side === 'response' ? 'assistant'
       : 'user';
-    entries.push({ id: `${idBase}:text`, kind, text, at });
+    entries.push({ id: `${idBase}:text`, kind, text, at, model: turn.model ?? null });
   }
 
   // Tool calls and tool results are intentionally not rendered in the panel
@@ -148,8 +181,10 @@ function buildDisplayTitle(session: InniesLiveSession): string {
     return `legacy ${session.sessionKey.slice(8, 16)}`;
   }
   const head = session.sessionKey.slice(0, 8);
-  const provider = session.providerSet[0] ?? 'session';
-  return `${provider} · ${head}`;
+  // Use the model nickname (opus / gpt-5.4 / …) instead of the raw provider
+  // so the header carries the same label the transcript rows use.
+  const modelLabel = formatModelLabel(session.modelSet[0] ?? null);
+  return `${modelLabel} · ${head}`;
 }
 
 export function SessionPanel({ session }: SessionPanelProps) {
@@ -176,42 +211,41 @@ export function SessionPanel({ session }: SessionPanelProps) {
     <article className={styles.panel}>
       <header className={styles.panelHeader}>
         <div className={styles.panelTitle}>
+          <span>{'//'} session</span>
           <span className={styles.panelTitleMain}>{buildDisplayTitle(session)}</span>
-          <span className={styles.panelLiveBadge}>LIVE</span>
-        </div>
-        <div className={styles.panelMeta}>
-          <span>{formatRelative(session.lastActivityAt)}</span>
           <span className={styles.panelMetaDivider}>·</span>
-          <span>{session.turnCount} turn{session.turnCount === 1 ? '' : 's'}</span>
-        </div>
-        <div className={styles.panelChips}>
-          {session.providerSet.map((provider) => (
-            <span key={provider} className={styles.chip}>{provider}</span>
-          ))}
-          {session.modelSet.map((model) => (
-            <span key={model} className={styles.chip}>{model}</span>
-          ))}
+          <span>{formatRelative(session.lastActivityAt)}</span>
         </div>
       </header>
 
       <div ref={bodyRef} className={styles.panelBody} onScroll={handleScroll}>
         {flattened.length === 0 ? (
-          <div className={styles.empty}>no transcript rows yet</div>
+          <div className={styles.empty}>{'//'} no transcript rows yet</div>
         ) : (
           flattened.map((group, idx) => (
             <section key={`${session.sessionKey}:${idx}`}>
-              {idx > 0 ? <div className={styles.turnSeparator}>{group.turnLabel}</div> : null}
-              {group.entries.map((entry) => (
-                <div
-                  key={entry.id}
-                  className={styles.entryRow}
-                  data-side={entry.kind === 'assistant' ? 'response' : 'request'}
-                  data-role={entry.kind}
-                >
-                  <span className={styles.entryLabel}>{entry.kind}</span>
-                  <p className={styles.entryText} data-role={entry.kind}>{entry.text}</p>
-                </div>
-              ))}
+              {idx > 0 ? (
+                <div className={styles.turnSeparator}>{'//'} {group.turnLabel}</div>
+              ) : null}
+              {group.entries.map((entry) => {
+                const label =
+                  entry.kind === 'user'
+                    ? 'shirtless'
+                    : entry.kind === 'assistant'
+                    ? formatModelLabel(entry.model)
+                    : entry.kind;
+                return (
+                  <div
+                    key={entry.id}
+                    className={styles.entryRow}
+                    data-side={entry.kind === 'assistant' ? 'response' : 'request'}
+                    data-role={entry.kind}
+                  >
+                    <span className={styles.entryLabel}>{label}{'>'}</span>
+                    <p className={styles.entryText} data-role={entry.kind}>{entry.text}</p>
+                  </div>
+                );
+              })}
             </section>
           ))
         )}

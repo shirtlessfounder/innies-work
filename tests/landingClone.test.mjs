@@ -157,3 +157,11 @@ test('landing styles preserve the hero and CTA sizing tokens from source', () =>
   assert.ok(stylesSource.includes('.landingTableLinks {'));
   assert.ok(stylesSource.includes('.landingTableLink {'));
 });
+
+test('landing editor-style typography uses the v2 monospace stack', () => {
+  const stylesSource = readSource('src/app/page.module.css');
+
+  assert.ok(stylesSource.includes(`--editor-font-family: Monaco, Menlo, "Courier New", monospace;`));
+  assert.ok(stylesSource.includes('font-family: var(--editor-font-family);'));
+  assert.ok(!stylesSource.includes(`'SFMono-Regular', 'JetBrains Mono', 'IBM Plex Mono', 'Menlo', 'Monaco', ui-monospace, monospace`));
+});

@@ -44,6 +44,7 @@
 }
 
 .console {
+  --editor-font-family: Monaco, Menlo, "Courier New", monospace;
   --console-ink: #16333e;
   --console-ink-soft: rgba(22, 51, 62, 0.68);
   --console-line: rgba(28, 62, 74, 0.14);
@@ -64,7 +65,7 @@
   min-height: calc(100svh - 56px);
   margin: 0 auto;
   color: var(--console-ink);
-  font-family: 'SFMono-Regular', 'JetBrains Mono', 'IBM Plex Mono', 'Menlo', 'Monaco', ui-monospace, monospace;
+  font-family: var(--editor-font-family);
 }
 
 .consoleHeader {
@@ -184,7 +185,7 @@
   gap: 10px;
   padding-top: 6px;
   color: #16333e;
-  font-family: 'SFMono-Regular', 'JetBrains Mono', 'IBM Plex Mono', 'Menlo', 'Monaco', ui-monospace, monospace;
+  font-family: var(--editor-font-family);
 }
 
 .liveBadge {
@@ -530,7 +531,7 @@
   min-height: 48px;
   padding: 0 18px;
   border-radius: 8px;
-  font-family: 'SFMono-Regular', 'JetBrains Mono', 'IBM Plex Mono', 'Menlo', 'Monaco', ui-monospace, monospace;
+  font-family: var(--editor-font-family);
   font-size: 0.92rem;
   font-weight: 500;
   letter-spacing: 0.16em;
@@ -582,7 +583,7 @@
   border-radius: 8px;
   border: 1px solid rgba(10, 90, 105, 0.72);
   color: #f3fbfd;
-  font-family: 'SFMono-Regular', 'JetBrains Mono', 'IBM Plex Mono', 'Menlo', 'Monaco', ui-monospace, monospace;
+  font-family: var(--editor-font-family);
   font-size: 0.92rem;
   font-weight: 500;
   letter-spacing: 0.16em;
@@ -633,7 +634,7 @@
   align-items: center;
   color: rgba(59, 90, 105, 0.86);
   text-decoration: none;
-  font-family: 'SFMono-Regular', 'JetBrains Mono', 'IBM Plex Mono', 'Menlo', 'Monaco', ui-monospace, monospace;
+  font-family: var(--editor-font-family);
   font-size: 0.8rem;
   letter-spacing: 0.08em;
 }

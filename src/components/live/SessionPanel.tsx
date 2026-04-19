@@ -13,10 +13,7 @@ type SessionPanelProps = {
   session: InniesLiveSession;
 };
 
-type RenderedEntry =
-  | { id: string; kind: 'system' | 'user' | 'assistant'; text: string; at: string }
-  | { id: string; kind: 'tool_call'; text: string; at: string }
-  | { id: string; kind: 'tool_result'; text: string; at: string };
+type RenderedEntry = { id: string; kind: 'system' | 'user' | 'assistant'; text: string; at: string };
 
 function formatClock(value: string): string {
   const ts = Date.parse(value);
@@ -42,6 +39,14 @@ function formatRelative(value: string): string {
   }).format(ts);
 }
 
+function isReasoningJsonPart(part: InniesLiveMessagePart): boolean {
+  if (part.type !== 'json') return false;
+  const value = part.value;
+  if (!value || typeof value !== 'object') return false;
+  const record = value as Record<string, unknown>;
+  return record.type === 'reasoning' || typeof record.encrypted_content === 'string';
+}
+
 function partsToText(parts: InniesLiveMessagePart[] | undefined): string {
   if (!parts) return '';
   const textBits: string[] = [];
@@ -51,11 +56,13 @@ function partsToText(parts: InniesLiveMessagePart[] | undefined): string {
         if (typeof part.text === 'string' && part.text.length > 0) textBits.push(part.text);
         break;
       case 'json':
+        // Hide codex "reasoning" blocks (encrypted, non-human-readable chain-of-thought).
+        if (isReasoningJsonPart(part)) break;
         textBits.push(safeStringify(part.value));
         break;
       case 'tool_call':
       case 'tool_result':
-        // handled separately below
+        // Tool activity is intentionally hidden from the panel transcript.
         break;
       default:
         break;
@@ -89,24 +96,8 @@ function messageToEntries(turn: InniesLiveTurn, message: InniesLiveMessage): Ren
     entries.push({ id: `${idBase}:text`, kind, text, at });
   }
 
-  for (const part of parts) {
-    if (part.type === 'tool_call') {
-      const args = safeStringify(part.arguments ?? {});
-      entries.push({
-        id: `${idBase}:tool:${part.id ?? 'anon'}`,
-        kind: 'tool_call',
-        text: `→ ${part.name ?? '(tool)'}(${args})`,
-        at
-      });
-    } else if (part.type === 'tool_result') {
-      entries.push({
-        id: `${idBase}:toolres:${part.toolUseId ?? 'anon'}`,
-        kind: 'tool_result',
-        text: typeof part.content === 'string' ? part.content : safeStringify(part.content),
-        at
-      });
-    }
-  }
+  // Tool calls and tool results are intentionally not rendered in the panel
+  // — they're implementation detail, not part of the user-facing conversation.
 
   return entries;
 }
@@ -217,12 +208,8 @@ export function SessionPanel({ session }: SessionPanelProps) {
                   data-side={entry.kind === 'assistant' ? 'response' : 'request'}
                   data-role={entry.kind}
                 >
-                  <span className={styles.entryLabel}>{entry.kind.replace('_', ' ')}</span>
-                  {entry.kind === 'tool_call' || entry.kind === 'tool_result' ? (
-                    <pre className={styles.entryTool}>{entry.text}</pre>
-                  ) : (
-                    <p className={styles.entryText} data-role={entry.kind}>{entry.text}</p>
-                  )}
+                  <span className={styles.entryLabel}>{entry.kind}</span>
+                  <p className={styles.entryText} data-role={entry.kind}>{entry.text}</p>
                 </div>
               ))}
             </section>

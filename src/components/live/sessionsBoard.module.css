@@ -1,186 +1,322 @@
+/* watch-me-work renders as code-style log content inside the vscode shell
+ * editor pane (#1F1F1F). Mono everything, gray-500 for labels, gray-300 for
+ * body text — same conventions as landing-page.md so the tab reads as part
+ * of the same editor surface. No card chrome, no drop shadows, minimal
+ * borders (just dashed rules between sessions). */
+
 .board {
+  font-family: Monaco, Menlo, "Courier New", monospace;
+  font-size: 14px;
+  line-height: 1.5;
+  color: #D1D5DB; /* gray-300 — body */
   display: flex;
   flex-direction: column;
-  gap: 1.25rem;
-  padding: 0.5rem 0;
-  color: var(--console-ink, #16333e);
+  gap: 1.5rem;
 }
 
 .statusRow {
   display: flex;
   align-items: center;
-  gap: 0.75rem;
-  font-size: 0.75rem;
-  color: var(--console-ink-soft, rgba(22, 51, 62, 0.68));
+  flex-wrap: wrap;
+  gap: 0.5ch;
+  font-size: 14px;
+  color: #6B7280; /* gray-500 — comment label tone */
+}
+
+.statusPrefix {
+  color: #6B7280;
+  margin-right: 0.5ch;
+}
+
+.statusValue {
+  color: #D1D5DB;
+}
+
+.statusDivider {
+  color: #4B5563; /* gray-600, slightly dimmer than the label */
+  padding: 0 0.25ch;
 }
 
 .statusDot {
-  width: 0.6rem;
-  height: 0.6rem;
+  display: inline-block;
+  width: 0.55em;
+  height: 0.55em;
   border-radius: 50%;
-  background: #bbb;
+  background: #6B7280;
+  margin-right: 0.5ch;
+  vertical-align: baseline;
 }
 
-.statusDot[data-status='live'] { background: #27c27c; }
-.statusDot[data-status='stale'] { background: #d9a90a; }
-.statusDot[data-status='degraded'] { background: #d94a3d; }
+.statusDot[data-status='live'] { background: #22C55E; }
+.statusDot[data-status='stale'] { background: #EAB308; }
+.statusDot[data-status='degraded'] { background: #EF4444; }
 
+.refreshButton {
+  margin-left: auto;
+  background: transparent;
+  border: 1px solid rgba(255, 255, 255, 0.08);
+  border-radius: 2px;
+  font-family: inherit;
+  font-size: 13px;
+  color: #9CA3AF;
+  padding: 0.1rem 0.6rem;
+  cursor: pointer;
+  transition: border-color 120ms ease, color 120ms ease;
+}
+
+.refreshButton:hover {
+  border-color: rgba(255, 255, 255, 0.2);
+  color: #D1D5DB;
+}
+
+.navButton {
+  background: transparent;
+  border: 1px solid rgba(255, 255, 255, 0.08);
+  border-radius: 2px;
+  font-family: inherit;
+  font-size: 13px;
+  color: #9CA3AF;
+  padding: 0.1rem 0.55rem;
+  cursor: pointer;
+  transition: border-color 120ms ease, color 120ms ease, opacity 120ms ease;
+}
+
+.navButton:hover {
+  border-color: rgba(255, 255, 255, 0.2);
+  color: #D1D5DB;
+}
+
+.navButton:disabled {
+  opacity: 0.3;
+  cursor: not-allowed;
+}
+
+.carouselWrap {
+  position: relative;
+}
+
+.errorBanner {
+  border-left: 2px solid #EF4444;
+  padding: 0.25rem 0 0.25rem 0.75rem;
+  color: #FCA5A5;
+  font-size: 14px;
+}
+
+.empty {
+  color: #6B7280;
+  font-size: 14px;
+  padding: 1rem 0;
+}
+
+/* Horizontal carousel — each session is a "code block" column that the
+ * user can scroll left/right between. Panels snap into view on scroll end
+ * for a tidy reading experience. */
 .grid {
-  display: grid;
-  grid-template-columns: repeat(auto-fill, minmax(22rem, 1fr));
-  gap: 1rem;
+  display: flex;
+  flex-direction: row;
+  gap: 0;
+  overflow-x: auto;
+  overflow-y: hidden;
+  scroll-snap-type: x mandatory;
+  scroll-padding-left: 0;
+  padding-bottom: 0.75rem; /* keep horizontal scrollbar off the content */
+  /* Extend slightly past the editor pane padding so the scroll track
+   * reaches the right edge of the shell; the panels themselves still
+   * respect the editor left-padding via their own shaping. */
+}
+
+.grid::-webkit-scrollbar {
+  height: 8px;
+}
+
+.grid::-webkit-scrollbar-track {
+  background: transparent;
+}
+
+.grid::-webkit-scrollbar-thumb {
+  background: rgba(255, 255, 255, 0.08);
+  border-radius: 4px;
+}
+
+.grid::-webkit-scrollbar-thumb:hover {
+  background: rgba(255, 255, 255, 0.16);
 }
 
 .panel {
   display: flex;
   flex-direction: column;
-  background: var(--shell-panel-strong, rgba(248, 251, 253, 0.88));
-  border: 1px solid var(--shell-line, rgba(20, 53, 64, 0.14));
-  border-radius: 0.75rem;
-  box-shadow: 0 1px 3px rgba(0, 0, 0, 0.04);
-  overflow: hidden;
-  min-height: 14rem;
+  gap: 0.5rem;
+  flex: 0 0 auto;
+  /* ~2/3 the original 640px so more panels fit within the editor pane.
+   * Clamped to 100% on narrow viewports so a single panel still fills
+   * the content area cleanly. */
+  width: min(420px, 100%);
+  /* Cap panel height to the viewport (minus the surrounding editor
+   * chrome — header, status row, padding, footer). This prevents the
+   * page from growing taller than the visible area; long transcripts
+   * scroll inside `.panelBody` via its internal overflow. */
+  max-height: calc(100vh - 14rem);
+  scroll-snap-align: start;
+  padding-right: 2rem;
+  /* Subtle separator between panels — a thin vertical dashed rule on the
+   * right edge that blends with the editor-pane aesthetic. */
+  border-right: 1px dashed rgba(255, 255, 255, 0.08);
+}
+
+.panel:last-child {
+  border-right: none;
+  padding-right: 0;
+}
+
+.panel + .panel {
+  padding-left: 2rem;
 }
 
 .panelHeader {
   display: flex;
   flex-direction: column;
-  gap: 0.4rem;
-  padding: 0.75rem 1rem;
-  border-bottom: 1px solid var(--shell-line, rgba(20, 53, 64, 0.14));
-  background: rgba(248, 251, 253, 0.6);
+  gap: 0.15rem;
 }
 
 .panelTitle {
   display: flex;
   align-items: baseline;
-  justify-content: space-between;
-  gap: 0.75rem;
-  font-weight: 600;
-  font-size: 0.875rem;
-  color: var(--console-ink, #16333e);
+  flex-wrap: wrap;
+  gap: 0.5ch;
+  font-size: 14px;
+  color: #6B7280; /* gray-500 — this whole line reads like a // comment */
 }
 
 .panelTitleMain {
-  overflow: hidden;
-  text-overflow: ellipsis;
-  white-space: nowrap;
-  font-family: "SFMono-Regular", ui-monospace, monospace;
+  color: #D1D5DB;
 }
 
 .panelLiveBadge {
-  font-size: 0.65rem;
+  font-size: 11px;
   font-weight: 600;
   letter-spacing: 0.08em;
-  color: #0b7285;
-  background: rgba(11, 114, 133, 0.12);
-  padding: 0.1rem 0.45rem;
-  border-radius: 0.25rem;
+  color: #22C55E;
+  border: 1px solid rgba(34, 197, 94, 0.35);
+  padding: 0 0.5ch;
+  border-radius: 2px;
+  margin-left: 0.5ch;
 }
 
 .panelMeta {
   display: flex;
-  gap: 0.5rem;
-  font-size: 0.7rem;
-  color: var(--console-ink-soft, rgba(22, 51, 62, 0.68));
+  gap: 0.5ch;
+  font-size: 14px;
+  color: #6B7280;
   flex-wrap: wrap;
 }
 
-.panelMetaDivider { opacity: 0.4; }
+.panelMetaDivider {
+  color: #4B5563;
+}
 
 .panelChips {
   display: flex;
-  gap: 0.35rem;
+  gap: 0.5ch;
   flex-wrap: wrap;
+  font-size: 13px;
+  color: #6B7280;
 }
 
 .chip {
-  font-size: 0.65rem;
-  padding: 0.1rem 0.4rem;
-  border-radius: 0.25rem;
-  background: rgba(11, 114, 133, 0.08);
-  color: #0b7285;
-  font-family: "SFMono-Regular", ui-monospace, monospace;
+  color: #9CA3AF;
+}
+
+.chip + .chip::before {
+  content: '·';
+  color: #4B5563;
+  margin-right: 0.5ch;
 }
 
 .panelBody {
-  flex: 1;
-  overflow-y: auto;
-  padding: 0.5rem 1rem 1rem 1rem;
   display: flex;
   flex-direction: column;
-  gap: 0.65rem;
-  max-height: 34rem;
+  gap: 0.5rem;
+  padding-left: 0;
+  /* Fill whatever vertical room the panel has left after the header,
+   * rather than pinning to a hard 32rem. The panel itself is already
+   * capped to viewport height, so this keeps each transcript bounded
+   * to the visible area. */
+  flex: 1;
+  min-height: 0;
+  overflow-y: auto;
   scroll-behavior: smooth;
 }
 
-.entryRow {
-  display: flex;
-  flex-direction: column;
-  gap: 0.15rem;
-  padding-top: 0.4rem;
+.panelBody::-webkit-scrollbar {
+  width: 8px;
 }
 
-.entryRow[data-side='request'][data-role='user'] .entryLabel { color: #0b7285; }
-.entryRow[data-side='response'] .entryLabel { color: #16333e; }
+.panelBody::-webkit-scrollbar-track {
+  background: transparent;
+}
+
+.panelBody::-webkit-scrollbar-thumb {
+  background: rgba(255, 255, 255, 0.08);
+  border-radius: 4px;
+}
+
+.panelBody::-webkit-scrollbar-thumb:hover {
+  background: rgba(255, 255, 255, 0.16);
+}
+
+.entryRow {
+  display: grid;
+  /* Label column sized to the widest label in practice (`shirtless>`).
+   * Left-aligned with just a single-char gap so text starts close to the
+   * panel edge instead of being shoved right. */
+  grid-template-columns: 5.25rem 1fr;
+  gap: 0.5ch;
+  align-items: baseline;
+  padding-top: 0.1rem;
+}
 
 .entryLabel {
-  font-size: 0.6rem;
-  font-weight: 700;
-  letter-spacing: 0.1em;
-  text-transform: uppercase;
-  color: var(--console-ink-soft, rgba(22, 51, 62, 0.68));
+  font-size: 13px;
+  color: #6B7280;
+  text-transform: lowercase;
+  letter-spacing: 0;
+  text-align: left;
+}
+
+.entryRow[data-role='user'] .entryLabel {
+  color: #9CA3AF; /* slightly brighter — your prompts stand out a hair */
+}
+
+.entryRow[data-role='assistant'] .entryLabel {
+  color: #6B7280;
+}
+
+.entryRow[data-role='system'] .entryLabel {
+  color: #4B5563;
 }
 
 .entryText {
-  font-size: 0.8rem;
-  line-height: 1.35;
+  font-family: inherit;
+  font-size: 14px;
+  line-height: 1.5;
   white-space: pre-wrap;
   word-break: break-word;
-  color: var(--console-ink, #16333e);
-  font-family: ui-sans-serif, system-ui, sans-serif;
+  color: #D1D5DB;
   margin: 0;
 }
 
 .entryText[data-role='system'] {
-  color: var(--console-ink-soft, rgba(22, 51, 62, 0.68));
-  font-size: 0.72rem;
+  color: #6B7280;
+  font-size: 13px;
 }
 
-.entryTool {
-  font-family: "SFMono-Regular", ui-monospace, monospace;
-  font-size: 0.72rem;
-  color: #6b4c14;
-  background: rgba(255, 215, 100, 0.12);
-  padding: 0.25rem 0.45rem;
-  border-radius: 0.25rem;
-  white-space: pre-wrap;
-  word-break: break-word;
-  margin: 0;
-}
-
-.empty {
-  color: var(--console-ink-soft, rgba(22, 51, 62, 0.5));
-  font-size: 0.8rem;
-  padding: 2rem 0;
-  text-align: center;
+.entryText[data-role='user'] {
+  color: #E5E7EB; /* gray-200 — a tiny bit brighter than default */
 }
 
 .turnSeparator {
-  font-size: 0.6rem;
-  letter-spacing: 0.1em;
-  color: var(--console-ink-soft, rgba(22, 51, 62, 0.45));
-  text-transform: uppercase;
-  padding: 0.35rem 0 0.1rem 0;
-  border-top: 1px dashed var(--shell-line, rgba(20, 53, 64, 0.14));
-  margin-top: 0.25rem;
-}
-
-.errorBanner {
-  background: rgba(217, 74, 61, 0.1);
-  border: 1px solid rgba(217, 74, 61, 0.4);
-  color: #a8312a;
-  padding: 0.5rem 0.75rem;
-  border-radius: 0.5rem;
-  font-size: 0.75rem;
+  font-size: 13px;
+  color: #6B7280;
+  padding-top: 0.75rem;
+  padding-bottom: 0.25rem;
 }

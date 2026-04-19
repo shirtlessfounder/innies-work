@@ -129,7 +129,11 @@ export function VscodeShell({ children }: { children: React.ReactNode }) {
           {showShellLineNumbers ? <LineNumbers lineCount={lineCount} /> : null}
           <div
             ref={contentRef}
-            className={showShellLineNumbers ? 'flex-1 px-8 py-12' : 'flex-1'}
+            className={
+              showShellLineNumbers
+                ? 'min-w-0 flex-1 px-8 py-12'
+                : 'min-w-0 flex-1'
+            }
           >
             <TabContent activeTab={activeTab}>{children}</TabContent>
           </div>

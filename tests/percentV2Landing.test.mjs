@@ -19,7 +19,7 @@ test('v2 scaffold files exist', () => {
   assert.equal(existsSync(fileUrl('postcss.config.mjs')), true);
 });
 
-test('v2 route carries the shirtless founder hero + thesis + product table', () => {
+test('v2 route carries the shirtless founder hero + mission + product table', () => {
   const pageSource = readSource('src/app/v2/page.tsx');
 
   // /v2 is served standalone (no VscodeShell) as a minimal landing mirror.
@@ -31,9 +31,11 @@ test('v2 route carries the shirtless founder hero + thesis + product table', () 
   assert.ok(pageSource.includes('<span>Founder</span>'));
   assert.ok(pageSource.includes('/vscode-v2/images/shirtless-founder-avatar.jpeg'));
   assert.ok(pageSource.includes('safiro-medium.otf'));
-  // Section headers from the current copy
-  assert.ok(pageSource.includes('What am I doing?'));
-  assert.ok(pageSource.includes('Thesis'));
+  // Section headers from the current copy (mission replaced the old what-am-i-doing + thesis pair)
+  assert.ok(pageSource.includes('Mission'));
+  assert.ok(!pageSource.includes('What am I doing?'));
+  assert.ok(!pageSource.includes('Thesis'));
+  assert.ok(pageSource.includes('amplifies the uniqueness'));
   assert.ok(pageSource.includes('Try out and'));
   // Product rows (pipe-delimited, not a <LandingProductsTable>)
   assert.ok(pageSource.includes('talk-to-my-agent'));
@@ -74,7 +76,12 @@ test('v2 shell preserves the vscode-style editor chrome', () => {
   assert.ok(shellSource.includes("backgroundColor: '#1F1F1F'"));
   assert.ok(shellSource.includes("const showShellLineNumbers = activeTab !== 'leave-a-note.md';"));
   assert.ok(shellSource.includes('showShellLineNumbers'));
-  assert.ok(shellSource.includes("className={showShellLineNumbers ? 'flex-1 px-8 py-12' : 'flex-1'}"));
+  // Content wrapper gets `min-w-0` so horizontally-scrollable tabs (like
+  // watch-me-work.md's carousel) can actually scroll within the shell
+  // instead of bursting past the viewport via the default flex-item
+  // `min-width: auto` behavior.
+  assert.ok(shellSource.includes("'min-w-0 flex-1 px-8 py-12'"));
+  assert.ok(shellSource.includes("'min-w-0 flex-1'"));
   assert.ok(lineNumbersSource.includes('fontFamily: \'Monaco, Menlo, "Courier New", monospace\''));
   assert.ok(lineNumbersSource.includes("fontSize: '13px'"));
   assert.ok(lineNumbersSource.includes("width: '48px'"));

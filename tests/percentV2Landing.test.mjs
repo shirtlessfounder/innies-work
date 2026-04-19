@@ -19,60 +19,27 @@ test('v2 scaffold files exist', () => {
   assert.equal(existsSync(fileUrl('postcss.config.mjs')), true);
 });
 
-test('v2 route is isolated from the current innies landing page and carries the shirtless founder hero copy', () => {
+test('v2 route carries the shirtless founder hero + thesis + product table', () => {
   const pageSource = readSource('src/app/v2/page.tsx');
-  const tableSource = readSource('src/components/LandingProductsTable.tsx');
-  const stylesSource = readSource('src/app/page.module.css');
 
+  // /v2 is served standalone (no VscodeShell) as a minimal landing mirror.
+  // The same copy is also the `children` of VscodeShell at / (src/app/page.tsx).
   assert.ok(pageSource.includes("import Image from 'next/image';"));
-  assert.ok(pageSource.includes("import { LandingProductsTable } from '../../components/LandingProductsTable';"));
-  assert.ok(!pageSource.includes('LandingHeroHeader'));
   assert.ok(pageSource.includes('Shirtless Founder'));
   assert.ok(pageSource.includes('aria-label="Shirtless Founder"'));
-  assert.ok(pageSource.includes('inline-flex items-center gap-[0.2em]'));
   assert.ok(pageSource.includes('<span>Shirtless</span>'));
   assert.ok(pageSource.includes('<span>Founder</span>'));
   assert.ok(pageSource.includes('/vscode-v2/images/shirtless-founder-avatar.jpeg'));
-  assert.ok(pageSource.includes('rounded-full'));
-  assert.ok(!pageSource.includes('Combinator'));
-  assert.ok(!pageSource.includes('/vscode-v2/logos/z-logo-white.png'));
-  assert.ok(pageSource.includes('What is ZC?'));
-  assert.ok(pageSource.includes('Futarchy for product development'));
-  assert.ok(pageSource.includes('<LandingProductsTable variant="editor" />'));
-  assert.ok(pageSource.indexOf('<LandingProductsTable variant="editor" />') < pageSource.indexOf('What problems are ZC solving for you as a founder?'));
-  assert.ok(tableSource.includes("variant?: 'landing' | 'editor';"));
-  assert.ok(tableSource.includes("variant = 'landing'"));
-  assert.ok(tableSource.includes("const isEditor = variant === 'editor';"));
-  assert.ok(tableSource.includes('styles.landingTableWrap_editor'));
-  assert.ok(tableSource.includes('styles.landingTableEditorList'));
-  assert.ok(tableSource.includes('styles.landingTableEditorHeaderRow'));
-  assert.ok(tableSource.includes('styles.landingTableEditorRow'));
-  assert.ok(tableSource.includes('styles.landingTableEditorPipe'));
-  assert.ok(tableSource.includes('styles.landingTableEditorLinks'));
-  assert.ok(!tableSource.includes('styles.landingTable_editor'));
-  assert.ok(stylesSource.includes('.landingTableWrap_editor {'));
-  assert.ok(stylesSource.includes('width: 100%;'));
-  assert.ok(stylesSource.includes('border: none;'));
-  assert.ok(stylesSource.includes('background: transparent;'));
-  assert.ok(stylesSource.includes('.landingTableEditorList {'));
-  assert.ok(stylesSource.includes("font-family: 'Monaco', 'Menlo', 'Courier New', monospace;"));
-  assert.ok(stylesSource.includes('font-size: 14px;'));
-  assert.ok(stylesSource.includes('.landingTableEditorHeaderRow,'));
-  assert.ok(stylesSource.includes('.landingTableEditorRow {'));
-  assert.ok(stylesSource.includes('display: flex;'));
-  assert.ok(stylesSource.includes('flex-wrap: wrap;'));
-  assert.ok(stylesSource.includes('gap: 14px;'));
-  assert.ok(stylesSource.includes('.landingTableEditorPipe {'));
-  assert.ok(stylesSource.includes('color: rgba(229, 231, 235, 0.42);'));
-  assert.ok(stylesSource.includes('.landingTableEditorLinks {'));
-  assert.ok(stylesSource.includes('.landingTableEditorHeaderLabel {'));
-  assert.ok(stylesSource.includes('font-weight: 400;'));
-  assert.ok(stylesSource.includes('text-transform: uppercase;'));
-  assert.ok(stylesSource.includes('.landingTableWrap_editor .landingTableLink {'));
-  assert.ok(stylesSource.includes('width: auto;'));
-  assert.ok(stylesSource.includes('height: auto;'));
-  assert.ok(pageSource.includes('Want to help build ZC?'));
   assert.ok(pageSource.includes('safiro-medium.otf'));
+  // Section headers from the current copy
+  assert.ok(pageSource.includes('What am I doing?'));
+  assert.ok(pageSource.includes('Thesis'));
+  assert.ok(pageSource.includes('Try out and'));
+  // Product rows (pipe-delimited, not a <LandingProductsTable>)
+  assert.ok(pageSource.includes('talk-to-my-agent'));
+  assert.ok(pageSource.includes('auto-biographer'));
+  assert.ok(pageSource.includes('active-hermes'));
+  assert.ok(pageSource.includes('agentmeets'));
 });
 
 test('v2 shell preserves the vscode-style editor chrome', () => {

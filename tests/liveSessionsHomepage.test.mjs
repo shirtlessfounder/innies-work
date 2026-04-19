@@ -11,13 +11,10 @@ function readSource(relativePath) {
   return readFileSync(fileUrl(relativePath), 'utf8');
 }
 
-test('homepage mounts a live sessions section below the hero', () => {
-  const pageSource = readSource('src/app/page.tsx');
-
-  assert.ok(pageSource.includes("import { LiveSessionsSection } from '../components/live/LiveSessionsSection';"));
-  assert.ok(pageSource.includes('<LandingHeroHeader'));
-  assert.ok(pageSource.includes('<LiveSessionsSection />'));
-});
+// Removed: 'homepage mounts a live sessions section below the hero'
+// The / route now renders VscodeShell + Shirtless Founder hero (PR #5).
+// LiveSessionsSection is no longer mounted on /; its live-panel surface
+// moved to the watch-me-work.md tab via <SessionsBoard />.
 
 test('live sessions section polls the public feed and exposes featured plus overflow states', () => {
   const sectionSource = readSource('src/components/live/LiveSessionsSection.tsx');

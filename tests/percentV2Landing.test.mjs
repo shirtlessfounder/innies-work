@@ -515,32 +515,27 @@ test('v2 footer removes the token CTA and social links while preserving the shel
 test('v2 notes tab uses an integrated IDE-style editor with gated realtime updates', () => {
   const packageSource = readSource('package.json');
   const tabContentSource = readSource('src/components/vscodeV2/TabContent.tsx');
-  const notesRouteSource = readSource('src/app/api/v2/notes/route.ts');
-  const notesStreamRouteSource = readSource('src/app/api/v2/notes/stream/route.ts');
-  const notesDbSource = readSource('src/lib/v2Notes/db.ts');
-  const notesRepoSource = readSource('src/lib/v2Notes/repository.ts');
   const notesTabSource = readSource('src/components/vscodeV2/SharedNotesTab.tsx');
   const monacoNotesEditorSource = readSource('src/components/vscodeV2/MonacoSharedNotesEditor.tsx');
 
   assert.ok(packageSource.includes('@monaco-editor/react'));
   assert.ok(tabContentSource.includes("if (activeTab === 'leave-a-note.md')"));
   assert.ok(tabContentSource.includes('return <SharedNotesTab key={activeTab} />;'));
-  assert.ok(notesRouteSource.includes('export async function GET()'));
-  assert.ok(notesRouteSource.includes('export async function PUT(request: Request)'));
-  assert.ok(notesRouteSource.includes('content'));
-  assert.ok(notesRouteSource.includes('baseRevision'));
-  assert.ok(notesStreamRouteSource.includes('text/event-stream'));
-  assert.ok(notesStreamRouteSource.includes('export async function GET(request: Request)'));
-  assert.ok(notesDbSource.includes('DATABASE_URL'));
-  assert.ok(notesDbSource.includes("from 'pg'"));
-  assert.ok(notesRepoSource.includes('LISTEN'));
-  assert.ok(notesRepoSource.includes('NOTIFY'));
-  assert.ok(notesRepoSource.includes('v2:notes.md'));
+
+  // Notes backend now lives on innies-api.exe.xyz — the Vercel
+  // /api/v2/notes{,/stream} routes and src/lib/v2Notes/* were removed.
+  // SharedNotesTab must point at NEXT_PUBLIC_INNIES_API_BASE_URL + /v2/notes
+  // for browser fetches / EventSource; Vercel serverless can't hold the
+  // LISTEN/NOTIFY SSE stream open reliably.
+  assert.equal(existsSync(fileUrl('src/app/api/v2/notes')), false, 'Next.js notes route should be removed');
+  assert.equal(existsSync(fileUrl('src/lib/v2Notes')), false, 'Next.js notes lib should be removed');
+
   assert.ok(notesTabSource.includes("'use client';"));
-  assert.ok(notesTabSource.includes("fetch('/api/v2/notes'"));
+  assert.ok(notesTabSource.includes("NEXT_PUBLIC_INNIES_API_BASE_URL"));
+  assert.ok(notesTabSource.includes("sharedNotesBaseUrl('/v2/notes')"));
+  assert.ok(notesTabSource.includes("sharedNotesBaseUrl('/v2/notes/stream')"));
   assert.ok(notesTabSource.includes("const [canConnectRealtime, setCanConnectRealtime] = useState(false);"));
   assert.ok(notesTabSource.includes('if (!canConnectRealtime) {'));
-  assert.ok(notesTabSource.includes("new EventSource('/api/v2/notes/stream')"));
   assert.ok(notesTabSource.includes('setCanConnectRealtime(true);'));
   assert.ok(notesTabSource.includes('setCanConnectRealtime(false);'));
   assert.ok(notesTabSource.includes("import { MonacoSharedNotesEditor } from './MonacoSharedNotesEditor';"));
@@ -572,7 +567,7 @@ test('v2 notes tab uses an integrated IDE-style editor with gated realtime updat
   assert.ok(monacoNotesEditorSource.includes('editor.getTopForLineNumber(lineNumber)'));
   assert.ok(monacoNotesEditorSource.includes('editor.onDidScrollChange'));
   assert.ok(monacoNotesEditorSource.includes('translateY(-${gutterScrollTop}px)'));
-  assert.ok(monacoNotesEditorSource.includes('const editorContentInsetLeft = 12;'));
+  assert.ok(monacoNotesEditorSource.includes('const editorContentInsetLeft = 16;'));
   assert.ok(monacoNotesEditorSource.includes('paddingLeft: `${editorContentInsetLeft}px`'));
   assert.ok(monacoNotesEditorSource.includes("const editorFontFamily = 'Monaco, Menlo, \"Courier New\", monospace';"));
   assert.ok(monacoNotesEditorSource.includes("path=\"file:///v2/leave-a-note.md\""));

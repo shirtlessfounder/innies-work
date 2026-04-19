@@ -12,6 +12,16 @@ type SharedNotesDocument = {
 
 const SAVE_DEBOUNCE_MS = 650;
 
+// Notes backend lives on the innies API (exe.dev) — Vercel serverless can't
+// hold the SSE /stream connection open long enough for LISTEN/NOTIFY.
+// Fall back to same-origin for local dev without the env var.
+const SHARED_NOTES_BASE_URL = (process.env.NEXT_PUBLIC_INNIES_API_BASE_URL ?? '').trim();
+
+function sharedNotesBaseUrl(path: string): string {
+  if (!SHARED_NOTES_BASE_URL) return path;
+  return `${SHARED_NOTES_BASE_URL.replace(/\/$/, '')}${path}`;
+}
+
 function parseSharedNotesDocument(value: unknown): SharedNotesDocument | null {
   if (!value || typeof value !== 'object') {
     return null;
@@ -85,7 +95,7 @@ export function SharedNotesTab() {
     isPersistingRef.current = true;
 
     try {
-      const response = await fetch('/api/v2/notes', {
+      const response = await fetch(sharedNotesBaseUrl('/v2/notes'), {
         method: 'PUT',
         headers: {
           'Content-Type': 'application/json'
@@ -127,7 +137,7 @@ export function SharedNotesTab() {
 
     const loadDocument = async () => {
       try {
-        const response = await fetch('/api/v2/notes', {
+        const response = await fetch(sharedNotesBaseUrl('/v2/notes'), {
           cache: 'no-store'
         });
 
@@ -172,7 +182,7 @@ export function SharedNotesTab() {
       return;
     }
 
-    const stream = new EventSource('/api/v2/notes/stream');
+    const stream = new EventSource(sharedNotesBaseUrl('/v2/notes/stream'));
 
     const handleOpen = () => {
       setStatus((currentStatus) => {

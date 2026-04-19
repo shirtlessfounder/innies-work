@@ -1,62 +1,56 @@
 import Image from 'next/image';
-import { LandingHeroHeader } from '../components/LandingHeroHeader';
-import { PlaceholderOrgCreationForm } from '../components/PlaceholderOrgCreationForm';
-import { LandingProductsTable } from '../components/LandingProductsTable';
-import { LiveSessionsSection } from '../components/live/LiveSessionsSection';
+import localFont from 'next/font/local';
 import { VscodeShell } from '../components/vscodeV2/VscodeShell';
-import styles from './page.module.css';
+
+const monoStyle = {
+  fontFamily: 'Monaco, Menlo, "Courier New", monospace'
+} as const;
+
+const productLinkClassName = 'no-underline hover:underline hover:text-white';
+
+const safiroMedium = localFont({
+  src: '../../public/vscode-v2/fonts/safiro-medium.otf',
+  display: 'swap'
+});
 
 export default function DashboardIndexPage() {
-  const heroFrame = (
-    <div className={styles.heroArtwork}>
-      <Image
-        className={styles.heroImage}
-        src="/images/archive-computer.png"
-        alt="Winter lake landscape on archival computer"
-        width={2359}
-        height={1778}
-        priority
-      />
-      <div className={styles.heroBadgeCluster} aria-hidden="true">
-        <Image
-          className={styles.heroBadge}
-          src="/images/innies-eye-logo-green-square.svg"
-          alt=""
-          width={320}
-          height={320}
-          priority
-        />
-      </div>
-    </div>
-  );
-
-  // The VS-code shell wraps everything. Its TabContent dispatcher passes
-  // `children` through when the active tab is `landing-page.md`, and swaps
-  // in InniesV2LiveSessionsTab / SharedNotesTab for the other tabs.
+  // VscodeShell wraps with Sidebar / Header / TabBar / LineNumbers / Footer.
+  // `children` is what renders inside the `landing-page.md` tab; the other
+  // tabs (watch-me-work.md, leave-a-note.md) are rendered by TabContent's
+  // dispatcher and do not receive this children payload.
   return (
     <VscodeShell>
-      <main className={styles.page}>
-        <div className={styles.shell}>
-          <div className={styles.console}>
-            <LandingHeroHeader />
-
-            <section className={styles.hero}>
-              <div className={styles.heroInner}>
-                <div className={styles.frame}>
-                  {heroFrame}
-                </div>
-
-                <PlaceholderOrgCreationForm />
-                <LandingProductsTable />
-              </div>
-            </section>
-
-            <div className={styles.liveSectionSlot}>
-              <LiveSessionsSection />
-            </div>
-          </div>
-        </div>
-      </main>
+      <div className="max-w-5xl">
+        <h1
+          aria-label="Shirtless Founder"
+          className={`${safiroMedium.className} inline-flex items-center gap-[0.2em] text-7xl font-normal leading-none`}
+        >
+          <span>Shirtless</span>
+          <span>Founder</span>
+          <span className="relative inline-block h-16 w-16 shrink-0 overflow-hidden rounded-full">
+            <Image
+              src="/vscode-v2/images/shirtless-founder-avatar.jpeg"
+              alt="Shirtless Founder portrait"
+              fill
+              priority
+              sizes="64px"
+              className="object-cover object-center"
+            />
+          </span>
+        </h1>
+        <p className="mt-7 text-[14px] text-gray-500" style={monoStyle}>{'//'}What am I doing?</p>
+        <p className="mt-1 text-[14px] text-gray-300" style={monoStyle}>Experimenting and building products for the autonomous agents of the future and people using AI agents right now</p>
+        <p className="mt-[26px] text-[14px] text-gray-500" style={monoStyle}>{'//'}Thesis</p>
+        <p className="mt-1 text-[14px] text-gray-300" style={monoStyle}>The highest value economic actors of the future will be autonomous AI agents. Solving human needs and desire will unlock non-zero value, but will feel more like a slice rather than the whole. Think the &quot;pets&quot; industry vs. the human economy.</p>
+        <p className="mt-[26px] text-[14px] text-gray-500" style={monoStyle}>{'//'}Try out and <a href="https://t.me/shirtlessfounder" target="_blank" rel="noopener noreferrer" className={productLinkClassName}>ask me</a> about any of these products:</p>
+        <p className="mt-0.5 text-[14px] text-gray-300" style={monoStyle}>Product | One-liner | Links</p>
+        <p className="mt-0.5 text-[14px] text-gray-300" style={monoStyle}>--- | --- | ---</p>
+        <p className="mt-1 text-[14px] text-gray-300" style={monoStyle}>talk-to-my-agent | ask my agent questions about what it&apos;s up to or vibe with its personality | <a href="https://t.me/shirtlessfounder" target="_blank" rel="noopener noreferrer" className={productLinkClassName}>[telegram]</a></p>
+        <p className="mt-1 text-[14px] text-gray-300" style={monoStyle}>auto-biographer | an agent that follows what you&apos;re thinking, doing and shipping and posts about it | <a href="https://github.com/shirtlessfounder/auto-biographer" target="_blank" rel="noopener noreferrer" className={productLinkClassName}>[github]</a></p>
+        <p className="mt-1 text-[14px] text-gray-300" style={monoStyle}>active-hermes | a proactive, digitally embodied hermes agent fork with access to in-network messaging | <a href="https://www.combinator.trade/launch-agent" target="_blank" rel="noopener noreferrer" className={productLinkClassName}>[launch]</a> <a href="https://github.com/handsdiff/activeclaw" target="_blank" rel="noopener noreferrer" className={productLinkClassName}>[github]</a></p>
+        <p className="mt-1 text-[14px] text-gray-300" style={monoStyle}>innies | pool your (and your friends&apos;) tokens into one key for extended claude/codex usage capacity | <a href="https://innies.computer" target="_blank" rel="noopener noreferrer" className={productLinkClassName}>[website]</a> <a href="https://github.com/shirtlessfounder/innies" target="_blank" rel="noopener noreferrer" className={productLinkClassName}>[github]</a></p>
+        <p className="mt-1 text-[14px] text-gray-300" style={monoStyle}>agentmeets | create DM chat room with invite links for any two agents | <a href="https://innies.live" target="_blank" rel="noopener noreferrer" className={productLinkClassName}>[website]</a> <a href="https://github.com/alexjaniak/AgentMeets" target="_blank" rel="noopener noreferrer" className={productLinkClassName}>[github]</a></p>
+      </div>
     </VscodeShell>
   );
 }

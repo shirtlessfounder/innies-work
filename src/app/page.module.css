@@ -767,6 +767,79 @@
   height: 14px;
 }
 
+.landingTableWrap_editor {
+  width: 100%;
+  border: none;
+  background: transparent;
+}
+
+.landingTableEditorList {
+  display: flex;
+  flex-direction: column;
+  gap: 18px;
+  font-family: 'Monaco', 'Menlo', 'Courier New', monospace;
+  font-size: 14px;
+}
+
+.landingTableEditorHeaderRow,
+.landingTableEditorRow {
+  display: flex;
+  flex-wrap: wrap;
+  align-items: baseline;
+  gap: 14px;
+}
+
+.landingTableEditorHeaderLabel {
+  color: rgba(229, 231, 235, 0.78);
+  font-weight: 400;
+  text-transform: uppercase;
+}
+
+.landingTableEditorRow {
+  color: rgba(229, 231, 235, 0.92);
+}
+
+.landingTableEditorPipe {
+  margin: 0 14px;
+  color: rgba(229, 231, 235, 0.42);
+}
+
+.landingTableEditorLinks {
+  display: inline-flex;
+  align-items: center;
+  gap: 10px;
+}
+
+.landingTableWrap_editor .landingTableProductLink:hover,
+.landingTableWrap_editor .landingTableProductLink:focus-visible {
+  color: #ffffff;
+}
+
+.landingTableWrap_editor .landingTableLink {
+  width: auto;
+  height: auto;
+  border: none;
+  border-radius: 0;
+  background: transparent;
+  color: rgba(229, 231, 235, 0.9);
+  transform: none;
+}
+
+.landingTableWrap_editor .landingTableLink:link,
+.landingTableWrap_editor .landingTableLink:visited,
+.landingTableWrap_editor .landingTableLink:active,
+.landingTableWrap_editor .landingTableLink:focus,
+.landingTableWrap_editor .landingTableLink:focus-visible {
+  color: rgba(229, 231, 235, 0.9);
+}
+
+.landingTableWrap_editor .landingTableLink:hover,
+.landingTableWrap_editor .landingTableLink:focus-visible {
+  transform: none;
+  background: transparent;
+  color: #FFFFFF;
+}
+
 @keyframes cursorBlink {
   0%,
   49% {

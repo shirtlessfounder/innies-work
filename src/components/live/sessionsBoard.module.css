@@ -1,0 +1,186 @@
+.board {
+  display: flex;
+  flex-direction: column;
+  gap: 1.25rem;
+  padding: 0.5rem 0;
+  color: var(--console-ink, #16333e);
+}
+
+.statusRow {
+  display: flex;
+  align-items: center;
+  gap: 0.75rem;
+  font-size: 0.75rem;
+  color: var(--console-ink-soft, rgba(22, 51, 62, 0.68));
+}
+
+.statusDot {
+  width: 0.6rem;
+  height: 0.6rem;
+  border-radius: 50%;
+  background: #bbb;
+}
+
+.statusDot[data-status='live'] { background: #27c27c; }
+.statusDot[data-status='stale'] { background: #d9a90a; }
+.statusDot[data-status='degraded'] { background: #d94a3d; }
+
+.grid {
+  display: grid;
+  grid-template-columns: repeat(auto-fill, minmax(22rem, 1fr));
+  gap: 1rem;
+}
+
+.panel {
+  display: flex;
+  flex-direction: column;
+  background: var(--shell-panel-strong, rgba(248, 251, 253, 0.88));
+  border: 1px solid var(--shell-line, rgba(20, 53, 64, 0.14));
+  border-radius: 0.75rem;
+  box-shadow: 0 1px 3px rgba(0, 0, 0, 0.04);
+  overflow: hidden;
+  min-height: 14rem;
+}
+
+.panelHeader {
+  display: flex;
+  flex-direction: column;
+  gap: 0.4rem;
+  padding: 0.75rem 1rem;
+  border-bottom: 1px solid var(--shell-line, rgba(20, 53, 64, 0.14));
+  background: rgba(248, 251, 253, 0.6);
+}
+
+.panelTitle {
+  display: flex;
+  align-items: baseline;
+  justify-content: space-between;
+  gap: 0.75rem;
+  font-weight: 600;
+  font-size: 0.875rem;
+  color: var(--console-ink, #16333e);
+}
+
+.panelTitleMain {
+  overflow: hidden;
+  text-overflow: ellipsis;
+  white-space: nowrap;
+  font-family: "SFMono-Regular", ui-monospace, monospace;
+}
+
+.panelLiveBadge {
+  font-size: 0.65rem;
+  font-weight: 600;
+  letter-spacing: 0.08em;
+  color: #0b7285;
+  background: rgba(11, 114, 133, 0.12);
+  padding: 0.1rem 0.45rem;
+  border-radius: 0.25rem;
+}
+
+.panelMeta {
+  display: flex;
+  gap: 0.5rem;
+  font-size: 0.7rem;
+  color: var(--console-ink-soft, rgba(22, 51, 62, 0.68));
+  flex-wrap: wrap;
+}
+
+.panelMetaDivider { opacity: 0.4; }
+
+.panelChips {
+  display: flex;
+  gap: 0.35rem;
+  flex-wrap: wrap;
+}
+
+.chip {
+  font-size: 0.65rem;
+  padding: 0.1rem 0.4rem;
+  border-radius: 0.25rem;
+  background: rgba(11, 114, 133, 0.08);
+  color: #0b7285;
+  font-family: "SFMono-Regular", ui-monospace, monospace;
+}
+
+.panelBody {
+  flex: 1;
+  overflow-y: auto;
+  padding: 0.5rem 1rem 1rem 1rem;
+  display: flex;
+  flex-direction: column;
+  gap: 0.65rem;
+  max-height: 34rem;
+  scroll-behavior: smooth;
+}
+
+.entryRow {
+  display: flex;
+  flex-direction: column;
+  gap: 0.15rem;
+  padding-top: 0.4rem;
+}
+
+.entryRow[data-side='request'][data-role='user'] .entryLabel { color: #0b7285; }
+.entryRow[data-side='response'] .entryLabel { color: #16333e; }
+
+.entryLabel {
+  font-size: 0.6rem;
+  font-weight: 700;
+  letter-spacing: 0.1em;
+  text-transform: uppercase;
+  color: var(--console-ink-soft, rgba(22, 51, 62, 0.68));
+}
+
+.entryText {
+  font-size: 0.8rem;
+  line-height: 1.35;
+  white-space: pre-wrap;
+  word-break: break-word;
+  color: var(--console-ink, #16333e);
+  font-family: ui-sans-serif, system-ui, sans-serif;
+  margin: 0;
+}
+
+.entryText[data-role='system'] {
+  color: var(--console-ink-soft, rgba(22, 51, 62, 0.68));
+  font-size: 0.72rem;
+}
+
+.entryTool {
+  font-family: "SFMono-Regular", ui-monospace, monospace;
+  font-size: 0.72rem;
+  color: #6b4c14;
+  background: rgba(255, 215, 100, 0.12);
+  padding: 0.25rem 0.45rem;
+  border-radius: 0.25rem;
+  white-space: pre-wrap;
+  word-break: break-word;
+  margin: 0;
+}
+
+.empty {
+  color: var(--console-ink-soft, rgba(22, 51, 62, 0.5));
+  font-size: 0.8rem;
+  padding: 2rem 0;
+  text-align: center;
+}
+
+.turnSeparator {
+  font-size: 0.6rem;
+  letter-spacing: 0.1em;
+  color: var(--console-ink-soft, rgba(22, 51, 62, 0.45));
+  text-transform: uppercase;
+  padding: 0.35rem 0 0.1rem 0;
+  border-top: 1px dashed var(--shell-line, rgba(20, 53, 64, 0.14));
+  margin-top: 0.25rem;
+}
+
+.errorBanner {
+  background: rgba(217, 74, 61, 0.1);
+  border: 1px solid rgba(217, 74, 61, 0.4);
+  color: #a8312a;
+  padding: 0.5rem 0.75rem;
+  border-radius: 0.5rem;
+  font-size: 0.75rem;
+}

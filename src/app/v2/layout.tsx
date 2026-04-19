@@ -1,40 +1,12 @@
 import type { Metadata } from 'next';
 import type { ReactNode } from 'react';
-import { Inter, IBM_Plex_Mono, Roboto_Mono } from 'next/font/google';
-import localFont from 'next/font/local';
-
-const inter = Inter({
-  subsets: ['latin'],
-  variable: '--font-inter'
-});
-
-const ibmPlexMono = IBM_Plex_Mono({
-  subsets: ['latin'],
-  weight: ['400', '500', '600', '700'],
-  variable: '--font-ibm-plex-mono'
-});
-
-const robotoMono = Roboto_Mono({
-  subsets: ['latin'],
-  variable: '--font-roboto-mono'
-});
-
-const rinter = localFont({
-  src: '../../../public/percent-v2/fonts/Rinter.ttf',
-  variable: '--font-rinter'
-});
+import { VscodeShell } from '../../components/vscodeV2/VscodeShell';
 
 export const metadata: Metadata = {
-  title: 'Percent | ZC',
-  description: 'Trade decision markets'
+  title: 'Z Combinator',
+  description: 'Fuel growth with token incentives'
 };
 
-export default function PercentV2Layout({ children }: { children: ReactNode }) {
-  return (
-    <div
-      className={`${inter.variable} ${ibmPlexMono.variable} ${robotoMono.variable} ${rinter.variable} min-h-screen bg-[#0a0a0a] text-white font-sans antialiased`}
-    >
-      {children}
-    </div>
-  );
+export default function V2Layout({ children }: { children: ReactNode }) {
+  return <VscodeShell>{children}</VscodeShell>;
 }

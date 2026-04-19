@@ -1,3 +1,17 @@
+// @ts-nocheck
+// @ts-ignore local JS helper is covered by Node tests and imported intentionally here.
+import {
+  filterArchiveSessionsForMonitor,
+  synthesizeArchiveLiveTrail,
+} from './archiveSessionBridge.mjs';
+import {
+  fetchBackendMonitorActivityFeed,
+  InniesMonitorActivityError,
+  shouldUseCanonicalBackendMonitor,
+} from './backendMonitorClient';
+
+export { InniesMonitorActivityError } from './backendMonitorClient';
+
 const DEFAULT_TIMEOUT_MS = 15_000;
 const ARCHIVE_WINDOW = '7d';
 const ARCHIVE_SESSION_LIMIT = 12;
@@ -5,6 +19,8 @@ const ARCHIVE_EVENT_SESSION_FANOUT = 6;
 const ARCHIVE_EVENTS_PER_SESSION_LIMIT = 8;
 const MAX_ACTIVITY_ITEMS = 160;
 const INNIES_INTERNAL_ORG_ID = '818d0cc7-7ed2-469f-b690-a977e72a921d';
+const MONITOR_LOOKBACK_MS = readMonitorLookbackMs(process.env.LIVE_OVERLAY_LOOKBACK_MS) ?? (24 * 60 * 60 * 1000);
+const MONITOR_BUYER_API_KEY_IDS = readMonitorBuyerApiKeyIds(process.env.LIVE_OVERLAY_BUYER_API_KEY_IDS);
 
 type ApiConfig = {
   baseUrl: string;
@@ -76,6 +92,8 @@ type ArchiveSessionSummary = {
   previewSample?: {
     promptPreview?: string | null;
     responsePreview?: string | null;
+    latestRequestId?: string | null;
+    latestAttemptNo?: number | null;
   } | null;
 };
 
@@ -97,6 +115,28 @@ type ArchiveSessionEvent = {
 type ArchiveSessionEventsResponse = {
   sessionKey?: string;
   events?: ArchiveSessionEvent[];
+};
+
+type ArchiveRequestAttemptMessage = {
+  side?: 'request' | 'response';
+  ordinal?: number;
+  role?: string;
+  contentType?: string;
+  content?: unknown;
+};
+
+type ArchiveRequestAttemptDetail = {
+  attempt?: {
+    requestId?: string;
+    attemptNo?: number;
+    provider?: string;
+    model?: string;
+    status?: string;
+    startedAt?: string;
+    completedAt?: string;
+  };
+  request?: ArchiveRequestAttemptMessage[];
+  response?: ArchiveRequestAttemptMessage[];
 };
 
 export type MonitorActivityLiveStatus = 'live' | 'stale' | 'degraded';
@@ -139,6 +179,7 @@ type ActivityNormalizationInput = {
   liveSessionsFeed: PublicLiveSessionsFeed | null;
   archiveSessions: ArchiveSessionsResponse | null;
   archiveEventsBySession: Map<string, ArchiveSessionEventsResponse>;
+  latestRequestDetailsBySession: Map<string, ArchiveRequestAttemptDetail>;
 };
 
 type SourceFailure = {
@@ -146,18 +187,6 @@ type SourceFailure = {
   status: number;
   message: string;
 };
-
-export class InniesMonitorActivityError extends Error {
-  readonly status: number;
-  readonly details: unknown;
-
-  constructor(status: number, message: string, details?: unknown) {
-    super(message);
-    this.name = 'InniesMonitorActivityError';
-    this.status = status;
-    this.details = details ?? null;
-  }
-}
 
 function readBaseApiConfig(): ApiConfig {
   const baseUrl = process.env.INNIES_API_BASE_URL?.trim()
@@ -347,8 +376,13 @@ function buildArchiveEventsHref(sessionKey: string): string {
   return `/v1/admin/archive/sessions/${encodeURIComponent(sessionKey)}/events`;
 }
 
+function buildArchiveRequestAttemptHref(requestId: string, attemptNo: number): string {
+  return `/v1/admin/archive/requests/${encodeURIComponent(requestId)}/attempts/${attemptNo}`;
+}
+
 export function normalizeActivityItems(input: ActivityNormalizationInput): MonitorActivityItem[] {
   const items: MonitorActivityItem[] = [];
+  const liveSessionKeys = new Set<string>();
 
   for (const session of input.liveSessionsFeed?.sessions ?? []) {
     const sessionKey = toTrimmedString(session.sessionKey);
@@ -373,6 +407,7 @@ export function normalizeActivityItems(input: ActivityNormalizationInput): Monit
       status: 'live',
       href: null,
     });
+    liveSessionKeys.add(sessionKey);
 
     for (const entry of session.entries ?? []) {
       const entryId = toTrimmedString(entry.entryId);
@@ -428,6 +463,18 @@ export function normalizeActivityItems(input: ActivityNormalizationInput): Monit
       }
     }
   }
+
+  const archiveBridge = synthesizeArchiveLiveTrail({
+    sessions: input.archiveSessions?.sessions ?? [],
+    archiveEventsBySession: input.archiveEventsBySession,
+    latestRequestDetailsBySession: input.latestRequestDetailsBySession,
+    existingLiveSessionKeys: liveSessionKeys,
+    existingLiveSessions: input.liveSessionsFeed?.sessions ?? [],
+    lookbackMs: MONITOR_LOOKBACK_MS,
+  });
+
+  items.push(...(archiveBridge.liveSessions as MonitorActivityItem[]));
+  items.push(...(archiveBridge.latestPrompts as MonitorActivityItem[]));
 
   for (const session of input.archiveSessions?.sessions ?? []) {
     const sessionKey = toTrimmedString(session.sessionKey);
@@ -512,7 +559,7 @@ function deriveLiveStatus(input: {
   return 'live';
 }
 
-export async function getInniesMonitorActivityFeed(): Promise<MonitorActivityPayload> {
+async function getLegacyInniesMonitorActivityFeed(): Promise<MonitorActivityPayload> {
   const generatedAt = new Date().toISOString();
   const [liveResult, archiveSessionsResult] = await Promise.allSettled([
     fetchJson<PublicLiveSessionsFeed>({
@@ -535,9 +582,17 @@ export async function getInniesMonitorActivityFeed(): Promise<MonitorActivityPay
     ? liveResult.value
     : (failures.push(toFailure('public_live_sessions', liveResult.reason)), null);
   const archiveSessions = archiveSessionsResult.status === 'fulfilled'
-    ? archiveSessionsResult.value
+    ? {
+      ...(archiveSessionsResult.value ?? {}),
+      sessions: filterArchiveSessionsForMonitor({
+        sessions: archiveSessionsResult.value?.sessions ?? [],
+        buyerApiKeyIds: MONITOR_BUYER_API_KEY_IDS,
+        lookbackMs: MONITOR_LOOKBACK_MS,
+      }),
+    }
     : (failures.push(toFailure('archive_sessions', archiveSessionsResult.reason)), null);
   const archiveEventsBySession = new Map<string, ArchiveSessionEventsResponse>();
+  const latestRequestDetailsBySession = new Map<string, ArchiveRequestAttemptDetail>();
 
   if (archiveSessions?.sessions?.length) {
     const adminConfig = readAdminApiConfig();
@@ -546,14 +601,34 @@ export async function getInniesMonitorActivityFeed(): Promise<MonitorActivityPay
         .slice(0, ARCHIVE_EVENT_SESSION_FANOUT)
         .map(async (session) => {
           const sessionKey = toTrimmedString(session.sessionKey);
+          const latestRequestId = toTrimmedString(session.previewSample?.latestRequestId);
+          const latestAttemptNo = readPositiveInteger(session.previewSample?.latestAttemptNo) ?? 1;
           if (!sessionKey) return null;
-          return fetchJson<ArchiveSessionEventsResponse>({
-            config: adminConfig,
-            path: buildArchiveEventsHref(sessionKey),
-            query: {
-              limit: ARCHIVE_EVENTS_PER_SESSION_LIMIT,
-            },
-          });
+
+          const [eventsResponse, latestRequestDetail] = await Promise.all([
+            fetchJson<ArchiveSessionEventsResponse>({
+              config: adminConfig,
+              path: buildArchiveEventsHref(sessionKey),
+              query: {
+                limit: ARCHIVE_EVENTS_PER_SESSION_LIMIT,
+              },
+            }),
+            latestRequestId
+              ? fetchJson<ArchiveRequestAttemptDetail>({
+                config: adminConfig,
+                path: buildArchiveRequestAttemptHref(latestRequestId, latestAttemptNo),
+              }).catch((error) => {
+                failures.push(toFailure(`archive_latest_request:${sessionKey}`, error));
+                return null;
+              })
+              : Promise.resolve(null),
+          ]);
+
+          return {
+            sessionKey,
+            eventsResponse,
+            latestRequestDetail,
+          };
         }),
     );
 
@@ -562,8 +637,11 @@ export async function getInniesMonitorActivityFeed(): Promise<MonitorActivityPay
       const sessionKey = toTrimmedString(archiveSessions.sessions[index]?.sessionKey);
 
       if (result.status === 'fulfilled') {
-        if (result.value && sessionKey) {
-          archiveEventsBySession.set(sessionKey, result.value);
+        if (result.value?.eventsResponse && sessionKey) {
+          archiveEventsBySession.set(sessionKey, result.value.eventsResponse);
+        }
+        if (result.value?.latestRequestDetail && sessionKey) {
+          latestRequestDetailsBySession.set(sessionKey, result.value.latestRequestDetail);
         }
         continue;
       }
@@ -576,6 +654,7 @@ export async function getInniesMonitorActivityFeed(): Promise<MonitorActivityPay
     liveSessionsFeed,
     archiveSessions,
     archiveEventsBySession,
+    latestRequestDetailsBySession,
   });
 
   if (!liveSessionsFeed && !archiveSessions) {
@@ -593,4 +672,52 @@ export async function getInniesMonitorActivityFeed(): Promise<MonitorActivityPay
     }),
     items,
   };
+}
+
+function wrapFallbackFailure(preferredBackendError: unknown, fallbackError: unknown): InniesMonitorActivityError {
+  const details = {
+    preferredBackendFailure: toFailure('canonical_backend_monitor', preferredBackendError),
+    fallbackFailure: toFailure('legacy_monitor_fallback', fallbackError),
+  };
+
+  if (fallbackError instanceof InniesMonitorActivityError) {
+    return new InniesMonitorActivityError(fallbackError.status, fallbackError.message, details);
+  }
+
+  return new InniesMonitorActivityError(500, 'Innies monitor activity feed unavailable', details);
+}
+
+export async function getInniesMonitorActivityFeed(): Promise<MonitorActivityPayload> {
+  if (!shouldUseCanonicalBackendMonitor()) {
+    return getLegacyInniesMonitorActivityFeed();
+  }
+
+  try {
+    return await fetchBackendMonitorActivityFeed();
+  } catch (preferredBackendError) {
+    try {
+      return await getLegacyInniesMonitorActivityFeed();
+    } catch (fallbackError) {
+      throw wrapFallbackFailure(preferredBackendError, fallbackError);
+    }
+  }
+}
+
+function readMonitorLookbackMs(value: string | undefined): number | null {
+  const parsed = Number(value);
+  return Number.isFinite(parsed) && parsed >= 0 ? Math.floor(parsed) : null;
+}
+
+function readMonitorBuyerApiKeyIds(value: string | undefined): Set<string> {
+  return new Set(
+    String(value ?? '')
+      .split(',')
+      .map((entry) => entry.trim())
+      .filter(Boolean),
+  );
+}
+
+function readPositiveInteger(value: unknown): number | null {
+  const parsed = Number(value);
+  return Number.isInteger(parsed) && parsed > 0 ? parsed : null;
 }

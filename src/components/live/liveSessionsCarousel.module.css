@@ -1,0 +1,113 @@
+.surface {
+  display: flex;
+  flex-direction: column;
+  gap: 12px;
+}
+
+.sectionHeader {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 12px;
+}
+
+.sectionTitle,
+.sectionMeta {
+  font-family: var(--font-ibm-plex-mono, monospace);
+  font-size: 11px;
+  letter-spacing: 0.16em;
+  text-transform: uppercase;
+}
+
+.sectionTitle {
+  color: rgba(22, 51, 62, 0.74);
+}
+
+.sectionMeta {
+  color: rgba(22, 51, 62, 0.58);
+}
+
+.card {
+  width: min(392px, calc(100vw - 40px));
+  min-height: 600px;
+  max-height: 600px;
+  overflow: hidden;
+  border: 1px solid var(--console-line, rgba(20, 53, 64, 0.14));
+  background:
+    linear-gradient(
+      180deg,
+      var(--console-panel-table-top, rgba(248, 251, 253, 0.32)) 0%,
+      var(--console-panel-table-bottom, rgba(248, 251, 253, 0.18)) 100%
+    );
+}
+
+.card[data-tone='live'] {
+  border-color: rgba(15, 114, 134, 0.36);
+}
+
+.cardHeader {
+  padding: 11px 12px;
+  background: var(--console-panel-strong, rgba(248, 251, 253, 0.88));
+  position: sticky;
+  top: 0;
+  z-index: 1;
+  border-bottom: 1px solid var(--shell-line-strong, rgba(20, 53, 64, 0.26));
+}
+
+.cardTitle {
+  margin: 0;
+  min-width: 0;
+  flex: 1 1 auto;
+  word-break: break-word;
+  font-family: var(--font-ibm-plex-mono, monospace);
+  font-size: 13px;
+  line-height: 1.45;
+  letter-spacing: 0.14em;
+  text-transform: uppercase;
+  color: var(--console-ink-soft, rgba(22, 51, 62, 0.68));
+}
+
+.cardHeaderDetail {
+  margin: 8px 0 0;
+  font-family: var(--font-ibm-plex-mono, monospace);
+  font-size: 11px;
+  line-height: 1.5;
+  color: rgba(22, 51, 62, 0.62);
+  word-break: break-word;
+}
+
+.messageRow {
+  padding: 11px 10px;
+  border-bottom: 1px solid rgba(28, 62, 74, 0.08);
+}
+
+.messageDetail {
+  margin-top: 8px;
+  font-family: var(--font-ibm-plex-mono, monospace);
+  font-size: 11px;
+  line-height: 1.5;
+  color: rgba(22, 51, 62, 0.62);
+  word-break: break-word;
+  white-space: pre-wrap;
+}
+
+.rowDeltaFlash {
+  animation: rowDeltaFlash 2s ease;
+}
+
+@keyframes rowDeltaFlash {
+  0% {
+    background: rgba(11, 114, 133, 0.14);
+  }
+
+  100% {
+    background: transparent;
+  }
+}
+
+@media (max-width: 640px) {
+  .card {
+    min-height: 520px;
+    max-height: 520px;
+  }
+}

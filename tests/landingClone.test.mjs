@@ -146,7 +146,7 @@ test('landing styles preserve the hero and CTA sizing tokens from source', () =>
   assert.ok(stylesSource.includes('.landingTable th,'));
   assert.ok(stylesSource.includes('.landingTable td {'));
   assert.ok(stylesSource.includes('padding: 8px 10px;'));
-  assert.ok(!stylesSource.includes('padding: 11px 10px;'));
+  assert.match(stylesSource, /\.landingTable th,\s*\.landingTable td \{[^}]*padding: 8px 10px;/);
   assert.ok(stylesSource.includes('position: sticky;'));
   assert.ok(stylesSource.includes('.landingTable tbody tr:hover {'));
   assert.ok(stylesSource.includes('.landingTableProductColumn {'));

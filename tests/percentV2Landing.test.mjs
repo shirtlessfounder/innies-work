@@ -40,7 +40,7 @@ test('v2 route carries the shirtless founder hero + mission + product table', ()
   // Product rows (pipe-delimited, not a <LandingProductsTable>)
   assert.ok(pageSource.includes('talk-to-my-agent'));
   assert.ok(pageSource.includes('auto-biographer'));
-  assert.ok(pageSource.includes('active-hermes'));
+  assert.ok(pageSource.includes('slate-agent'));
   assert.ok(pageSource.includes('agentmeets'));
 });
 
@@ -122,7 +122,7 @@ test('v2 sidebar preserves activity bar and explorer structure', () => {
   assert.ok(sidebarSource.includes('zIndex: 11'));
   assert.ok(fileExplorerSource.includes('EXPLORER'));
   assert.ok(fileExplorerSource.includes('projects'));
-  assert.ok(fileExplorerSource.includes('active-hermes'));
+  assert.ok(fileExplorerSource.includes('slate-agent'));
   assert.ok(fileExplorerSource.includes('innies'));
   assert.ok(fileExplorerSource.includes('combinator'));
   assert.ok(fileExplorerSource.includes('agentmeets'));
@@ -141,9 +141,9 @@ test('v2 sidebar preserves activity bar and explorer structure', () => {
   assert.ok(fileExplorerSource.includes('aelix'));
   assert.ok(!fileExplorerSource.includes('shirtless-projects'));
   assert.ok(!fileExplorerSource.includes('shirtless-socials'));
-  assert.ok(fileExplorerSource.includes('active-hermes.git'));
-  assert.ok(fileExplorerSource.includes('active-hermes.com/launch'));
-  assert.ok(fileExplorerSource.indexOf('active-hermes.com/launch') < fileExplorerSource.indexOf('active-hermes.git'));
+  assert.ok(fileExplorerSource.includes('slate-agent.git'));
+  assert.ok(fileExplorerSource.includes('slate-agent.com/launch'));
+  assert.ok(fileExplorerSource.indexOf('slate-agent.com/launch') < fileExplorerSource.indexOf('slate-agent.git'));
   assert.ok(fileExplorerSource.includes('innies.computer'));
   assert.ok(fileExplorerSource.includes('innies.git'));
   assert.ok(fileExplorerSource.includes('combinator.trade'));
@@ -265,11 +265,11 @@ test('v2 sidebar preserves activity bar and explorer structure', () => {
   assert.ok(!fileExplorerSource.includes('const inniesFolderRowRef = useRef<HTMLDivElement | null>(null);'));
   assert.ok(!fileExplorerSource.includes('const agentMeetsFolderRowRef = useRef<HTMLDivElement | null>(null);'));
   assert.ok(!fileExplorerSource.includes('const combinatorFolderRowRef = useRef<HTMLDivElement | null>(null);'));
-  assert.ok(!fileExplorerSource.includes("expandedFolders['active-hermes'] ? activeHermesLaunchRowRef.current ?? target : target"));
+  assert.ok(!fileExplorerSource.includes("expandedFolders['slate-agent'] ? activeHermesLaunchRowRef.current ?? target : target"));
   assert.ok(!fileExplorerSource.includes('setHoveredProjectEntryPosition(inniesTooltipNote, inniesFolderRowRef.current ?? target);'));
   assert.ok(!fileExplorerSource.includes('setHoveredProjectEntryPosition(agentMeetsTooltipNote, agentMeetsFolderRowRef.current ?? target);'));
   assert.ok(!fileExplorerSource.includes('setHoveredProjectEntryPosition(combinatorTooltipNote, combinatorFolderRowRef.current ?? target);'));
-  assert.ok(!fileExplorerSource.includes("rowRef={entry.name === 'active-hermes.com/launch' ? activeHermesLaunchRowRef : undefined}"));
+  assert.ok(!fileExplorerSource.includes("rowRef={entry.name === 'slate-agent.com/launch' ? activeHermesLaunchRowRef : undefined}"));
   assert.ok(!fileExplorerSource.includes('rowRef={inniesFolderRowRef}'));
   assert.ok(!fileExplorerSource.includes('rowRef={agentMeetsFolderRowRef}'));
   assert.ok(!fileExplorerSource.includes('rowRef={combinatorFolderRowRef}'));
@@ -322,7 +322,7 @@ test('v2 sidebar preserves activity bar and explorer structure', () => {
   assert.ok(fileExplorerSource.includes("import { useRef, useState, type Ref } from 'react';"));
   assert.ok(fileExplorerSource.includes('const [expandedFolders, setExpandedFolders] = useState({'));
   assert.ok(fileExplorerSource.includes('projects: true'));
-  assert.ok(fileExplorerSource.includes("'active-hermes': true"));
+  assert.ok(fileExplorerSource.includes("'slate-agent': true"));
   assert.ok(fileExplorerSource.includes('innies: false'));
   assert.ok(fileExplorerSource.includes('combinator: false'));
   assert.ok(fileExplorerSource.includes("'agent-meets': false"));
@@ -411,8 +411,8 @@ test('v2 sidebar preserves activity bar and explorer structure', () => {
   assert.ok(fileExplorerSource.includes('indentClass="pl-14"'));
   assert.ok(fileExplorerSource.includes("event.currentTarget.style.backgroundColor = '#474748'"));
   assert.ok(fileExplorerSource.indexOf('name="auto-biographer"') < fileExplorerSource.indexOf('name="innies"'));
-  assert.ok(fileExplorerSource.indexOf('name="auto-biographer"') < fileExplorerSource.indexOf('name="active-hermes"'));
-  assert.ok(fileExplorerSource.indexOf('name="active-hermes"') < fileExplorerSource.indexOf('name="innies"'));
+  assert.ok(fileExplorerSource.indexOf('name="auto-biographer"') < fileExplorerSource.indexOf('name="slate-agent"'));
+  assert.ok(fileExplorerSource.indexOf('name="slate-agent"') < fileExplorerSource.indexOf('name="innies"'));
   assert.ok(fileExplorerSource.indexOf('name="innies"') < fileExplorerSource.indexOf('name="agentmeets"'));
   assert.ok(fileExplorerSource.indexOf('name="agentmeets"') < fileExplorerSource.indexOf('name="combinator"'));
   assert.ok(fileExplorerSource.indexOf('name="combinator"') < fileExplorerSource.indexOf('name="old-builds"'));

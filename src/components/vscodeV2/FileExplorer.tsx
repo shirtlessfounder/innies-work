@@ -5,7 +5,7 @@ import { FaXTwitter } from 'react-icons/fa6';
 import { TbBrandTelegram } from 'react-icons/tb';
 import { useRef, useState, type Ref } from 'react';
 
-type ExpandableFolderKey = 'projects' | 'auto-biographer' | 'active-hermes' | 'innies' | 'combinator' | 'agent-meets' | 'old-builds' | 'moltmarkets' | 'links' | 'output' | 'socials' | 'personal' | 'friends' | 'hands' | 'oogway' | 'aelix';
+type ExpandableFolderKey = 'projects' | 'auto-biographer' | 'slate-agent' | 'innies' | 'combinator' | 'agent-meets' | 'old-builds' | 'moltmarkets' | 'links' | 'output' | 'socials' | 'personal' | 'friends' | 'hands' | 'oogway' | 'aelix';
 type ExplorerIconName = 'file' | 'globe' | 'github' | 'x' | 'telegram' | 'substack' | 'goodreads' | 'soundcloud' | 'spotify';
 
 type ExplorerLink = {
@@ -350,12 +350,12 @@ export function FileExplorer() {
     {
       href: 'https://www.combinator.trade/launch-agent',
       icon: 'globe',
-      name: 'active-hermes.com/launch'
+      name: 'slate-agent.com/launch'
     },
     {
       href: 'https://github.com/handsdiff/activeclaw',
       icon: 'github',
-      name: 'active-hermes.git'
+      name: 'slate-agent.git'
     }
   ];
   const agentMeetsEntries: ProjectEntry[] = [
@@ -483,7 +483,7 @@ export function FileExplorer() {
   const [expandedFolders, setExpandedFolders] = useState({
     projects: true,
     'auto-biographer': true,
-    'active-hermes': true,
+    'slate-agent': true,
     innies: false,
     combinator: false,
     'agent-meets': false,
@@ -598,16 +598,16 @@ export function FileExplorer() {
               )}
 
               <FolderRow
-                name="active-hermes"
+                name="slate-agent"
                 indentClass="pl-4"
                 marginClass="mt-1"
-                expanded={expandedFolders['active-hermes']}
+                expanded={expandedFolders['slate-agent']}
                 onHoverEnd={clearHoveredProjectEntry}
                 onHoverStart={setActiveHermesTooltip}
-                onClick={() => toggleFolder('active-hermes')}
+                onClick={() => toggleFolder('slate-agent')}
               />
 
-              {expandedFolders['active-hermes'] && (
+              {expandedFolders['slate-agent'] && (
                 <div>
                   {activeclawHermesEntries.map((entry) => (
                     <ProjectEntryRow

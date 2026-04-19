@@ -2,6 +2,7 @@
 
 import type { CSSProperties } from 'react';
 import { SessionsBoard } from './SessionsBoard';
+import type { InniesLiveFeed } from '../../lib/inniesLive/feedTypes';
 
 // The watch-me-work tab renders inside the vscode shell's editor pane (dark
 // `#1F1F1F` bg, Monaco/Menlo mono text, line numbers on the left). We
@@ -14,10 +15,14 @@ const LIVE_TAB_SURFACE_STYLE = {
   '--console-line': '#E6E6E6'
 } as CSSProperties;
 
-export function InniesV2LiveSessionsTab() {
+type InniesV2LiveSessionsTabProps = {
+  initialFeed?: InniesLiveFeed | null;
+};
+
+export function InniesV2LiveSessionsTab({ initialFeed = null }: InniesV2LiveSessionsTabProps = {}) {
   return (
     <section className="w-full max-w-none" style={LIVE_TAB_SURFACE_STYLE}>
-      <SessionsBoard />
+      <SessionsBoard initialFeed={initialFeed} />
     </section>
   );
 }

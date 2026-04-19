@@ -2,3 +2,4 @@
 .next
 .next-dev
 node_modules
+tsconfig.tsbuildinfo

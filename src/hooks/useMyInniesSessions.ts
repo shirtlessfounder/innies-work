@@ -5,6 +5,9 @@ import { INNIES_LIVE_FEED_ROUTE, type InniesLiveFeed } from '../lib/inniesLive/f
 
 const DEFAULT_POLL_INTERVAL_MS = 5_000;
 const STALE_GRACE_MULTIPLIER = 2;
+// Cached feed older than this is ignored — don't show a half-day-old snapshot.
+const CACHE_MAX_AGE_MS = 60 * 60 * 1000; // 1h
+const CACHE_STORAGE_KEY = 'innies:live-sessions:last-feed';
 
 export type InniesLiveStatus = 'loading' | 'live' | 'stale' | 'degraded';
 
@@ -14,6 +17,15 @@ export type UseMyInniesSessionsResult = {
   error: string | null;
   lastUpdatedAt: string | null;
   refresh: () => void;
+};
+
+export type UseMyInniesSessionsOptions = {
+  /**
+   * Initial feed to render on first paint before the client fetch resolves.
+   * Passed in from a server component via SSR prefetch so the panel isn't
+   * blank while the first network round-trip is in flight.
+   */
+  initialFeed?: InniesLiveFeed | null;
 };
 
 type ErrorPayload = { code?: unknown; message?: unknown };
@@ -38,6 +50,35 @@ async function readBody(response: Response): Promise<unknown> {
   }
 }
 
+function readCachedFeed(): InniesLiveFeed | null {
+  if (typeof window === 'undefined') return null;
+  try {
+    const raw = window.localStorage.getItem(CACHE_STORAGE_KEY);
+    if (!raw) return null;
+    const parsed = JSON.parse(raw) as unknown;
+    if (!parsed || typeof parsed !== 'object') return null;
+    const record = parsed as { cachedAt?: unknown; feed?: unknown };
+    if (typeof record.cachedAt !== 'number') return null;
+    if (Date.now() - record.cachedAt > CACHE_MAX_AGE_MS) return null;
+    if (!isFeed(record.feed)) return null;
+    return record.feed;
+  } catch {
+    return null;
+  }
+}
+
+function writeCachedFeed(feed: InniesLiveFeed): void {
+  if (typeof window === 'undefined') return;
+  try {
+    window.localStorage.setItem(
+      CACHE_STORAGE_KEY,
+      JSON.stringify({ cachedAt: Date.now(), feed })
+    );
+  } catch {
+    // quota / disabled storage — best-effort, ignore
+  }
+}
+
 function readErrorMessage(status: number, payload: unknown): string {
   if (payload && typeof payload === 'object') {
     const record = payload as ErrorPayload;
@@ -51,15 +92,31 @@ function readErrorMessage(status: number, payload: unknown): string {
   return `Innies live sessions request failed (${status})`;
 }
 
-export function useMyInniesSessions(): UseMyInniesSessionsResult {
-  const [feed, setFeed] = useState<InniesLiveFeed | null>(null);
-  const [status, setStatus] = useState<InniesLiveStatus>('loading');
+export function useMyInniesSessions(options: UseMyInniesSessionsOptions = {}): UseMyInniesSessionsResult {
+  const { initialFeed = null } = options;
+  const [feed, setFeed] = useState<InniesLiveFeed | null>(initialFeed);
+  const [status, setStatus] = useState<InniesLiveStatus>(initialFeed ? 'stale' : 'loading');
   const [error, setError] = useState<string | null>(null);
-  const [lastUpdatedAt, setLastUpdatedAt] = useState<string | null>(null);
+  const [lastUpdatedAt, setLastUpdatedAt] = useState<string | null>(initialFeed?.generatedAt ?? null);
   const [refreshNonce, setRefreshNonce] = useState(0);
 
-  const feedRef = useRef<InniesLiveFeed | null>(null);
+  const feedRef = useRef<InniesLiveFeed | null>(initialFeed);
   const lastGoodFetchAtMsRef = useRef<number | null>(null);
+
+  // Hydrate from localStorage cache on mount so returning users see the last
+  // feed immediately while the fresh fetch is in flight. SSR-safe: only runs
+  // after hydration so there's no hydration mismatch.
+  useEffect(() => {
+    if (feedRef.current) return; // SSR already hydrated us
+    const cached = readCachedFeed();
+    if (!cached) return;
+    feedRef.current = cached;
+    startTransition(() => {
+      setFeed(cached);
+      setStatus('stale');
+      setLastUpdatedAt(cached.generatedAt);
+    });
+  }, []);
 
   useEffect(() => {
     let cancelled = false;
@@ -105,6 +162,7 @@ export function useMyInniesSessions(): UseMyInniesSessionsResult {
 
         feedRef.current = body;
         lastGoodFetchAtMsRef.current = Date.now();
+        writeCachedFeed(body);
 
         startTransition(() => {
           setFeed(body);

@@ -77,7 +77,13 @@ function isReasoningJsonPart(part: InniesLiveMessagePart): boolean {
   const value = part.value;
   if (!value || typeof value !== 'object') return false;
   const record = value as Record<string, unknown>;
-  return record.type === 'reasoning' || typeof record.encrypted_content === 'string';
+  return (
+    record.type === 'reasoning'
+    || record.type === 'thinking'
+    || record.type === 'redacted_thinking'
+    || typeof record.encrypted_content === 'string'
+    || typeof record.signature === 'string'
+  );
 }
 
 function partsToText(parts: InniesLiveMessagePart[] | undefined): string {

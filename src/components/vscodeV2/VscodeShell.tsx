@@ -8,6 +8,7 @@ import { LineNumbers } from './LineNumbers';
 import { Sidebar } from './Sidebar';
 import { TabContent } from './TabContent';
 import { STATIC_TABS, type VscodeTab } from './TabBar';
+import type { InniesLiveFeed } from '../../lib/inniesLive/feedTypes';
 
 const MIN_SIDEBAR_WIDTH = 220;
 const MAX_SIDEBAR_WIDTH = 520;
@@ -26,7 +27,17 @@ function readInitialTabFromLocation(): VscodeTab | null {
   return requestedTab as VscodeTab;
 }
 
-export function VscodeShell({ children }: { children: React.ReactNode }) {
+type VscodeShellProps = {
+  children: React.ReactNode;
+  /**
+   * Live-sessions feed prefetched on the server so the watch-me-work tab
+   * renders populated instead of blank on first paint. Null when prefetch
+   * failed or timed out — the client hook then falls back to its own fetch.
+   */
+  initialLiveFeed?: InniesLiveFeed | null;
+};
+
+export function VscodeShell({ children, initialLiveFeed = null }: VscodeShellProps) {
   const [activeTab, setActiveTab] = useState<VscodeTab>('landing-page.md');
   const [sidebarWidth, setSidebarWidth] = useState(300);
   const [isResizingSidebar, setIsResizingSidebar] = useState(false);
@@ -135,7 +146,7 @@ export function VscodeShell({ children }: { children: React.ReactNode }) {
                 : 'min-w-0 flex-1'
             }
           >
-            <TabContent activeTab={activeTab}>{children}</TabContent>
+            <TabContent activeTab={activeTab} initialLiveFeed={initialLiveFeed}>{children}</TabContent>
           </div>
         </div>
       </main>

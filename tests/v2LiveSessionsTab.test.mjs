@@ -11,28 +11,43 @@ function readSource(relativePath) {
   return readFileSync(fileUrl(relativePath), 'utf8');
 }
 
-test('v2 live tab mounts the live cli sessions carousel plus archive trail panel', () => {
+test('v2 live tab mounts the innies live sessions board backed by the admin me endpoint', () => {
   const tabContentSource = readSource('src/components/vscodeV2/TabContent.tsx');
   const liveTabSource = readSource('src/components/live/InniesV2LiveSessionsTab.tsx');
-  const carouselSource = readSource('src/components/live/LiveSessionsCarousel.tsx');
-  const archivePanelSource = readSource('src/components/live/ArchiveTrailPanel.tsx');
+  const boardSource = readSource('src/components/live/SessionsBoard.tsx');
+  const panelSource = readSource('src/components/live/SessionPanel.tsx');
+  const hookSource = readSource('src/hooks/useMyInniesSessions.ts');
+  const routeSource = readSource('src/app/api/innies/live-sessions/route.ts');
+  const feedTypesSource = readSource('src/lib/inniesLive/feedTypes.ts');
 
   assert.ok(tabContentSource.includes("import { InniesV2LiveSessionsTab } from '../live/InniesV2LiveSessionsTab';"));
   assert.ok(tabContentSource.includes('return <InniesV2LiveSessionsTab key={activeTab} />;'));
-  assert.ok(liveTabSource.includes("import { LiveSessionsCarousel } from './LiveSessionsCarousel';"));
-  assert.ok(liveTabSource.includes("import { ArchiveTrailPanel } from './ArchiveTrailPanel';"));
-  assert.ok(liveTabSource.includes('<LiveSessionsCarousel />'));
-  assert.ok(liveTabSource.includes('<ArchiveTrailPanel />'));
+  assert.ok(liveTabSource.includes("import { SessionsBoard } from './SessionsBoard';"));
+  assert.ok(liveTabSource.includes('<SessionsBoard />'));
+  assert.ok(!liveTabSource.includes('<LiveSessionsCarousel />'));
+  assert.ok(!liveTabSource.includes('<ArchiveTrailPanel />'));
   assert.ok(!liveTabSource.includes('<ActivityRailModule />'));
   assert.ok(liveTabSource.includes("'--console-line': '#E6E6E6'"));
-  assert.ok(carouselSource.includes('> LIVE CLI SESSIONS'));
-  assert.ok(carouselSource.includes("item.stream === 'live_sessions'"));
-  assert.ok(carouselSource.includes("item.stream === 'latest_prompts'"));
-  assert.ok(carouselSource.includes("item.sessionKey === session.sessionKey"));
-  assert.ok(carouselSource.includes('overflow-x-auto'));
-  assert.ok(carouselSource.includes("searchParams.get('sessionKey')"));
-  assert.ok(carouselSource.includes('focusedSessionKey'));
-  assert.ok(archivePanelSource.includes("section.id === 'archive_trail'"));
+
+  // Board wires the hook and renders one panel per session.
+  assert.ok(boardSource.includes("import { useMyInniesSessions }"));
+  assert.ok(boardSource.includes("import { SessionPanel }"));
+  assert.ok(boardSource.includes('<SessionPanel '));
+
+  // Panel renders a turn-aware transcript from the innies live feed.
+  assert.ok(panelSource.includes("from '../../lib/inniesLive/feedTypes'"));
+  assert.ok(panelSource.includes('flattenSession'));
+
+  // Hook polls the Next.js proxy (not the legacy monitor path).
+  assert.ok(hookSource.includes('INNIES_LIVE_FEED_ROUTE'));
+  assert.ok(feedTypesSource.includes("INNIES_LIVE_FEED_ROUTE = '/api/innies/live-sessions'"));
+
+  // Proxy route reads the admin key SERVER-SIDE only (never NEXT_PUBLIC_).
+  assert.ok(routeSource.includes("readEnv('INNIES_ADMIN_API_KEY')"));
+  assert.ok(routeSource.includes("readEnv('INNIES_API_BASE_URL')"));
+  assert.ok(routeSource.includes("readEnv('INNIES_MONITOR_API_KEY_IDS')"));
+  assert.ok(routeSource.includes('/v1/admin/me/live-sessions'));
+  assert.ok(!routeSource.includes('NEXT_PUBLIC_INNIES_ADMIN_API_KEY'));
 });
 
 test('v2 live tab ports the old monitor route, hook, and activity-feed contract', () => {

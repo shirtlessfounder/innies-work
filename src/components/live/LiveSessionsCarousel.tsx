@@ -19,6 +19,11 @@ type LiveSessionCard = {
   trail: InniesMonitorActivityItem[];
 };
 
+export function isSyntheticArchiveLiveSession(session: Pick<InniesMonitorActivityItem, 'id' | 'sessionKey'>): boolean {
+  return session.id.startsWith('archive-live-session:')
+    || session.sessionKey?.startsWith('cli:idle:') === true;
+}
+
 function formatCount(value: number): string {
   return new Intl.NumberFormat('en-US').format(value);
 }
@@ -132,20 +137,23 @@ function messageActorLabel(card: LiveSessionCard, message: InniesMonitorActivity
   }
 }
 
-function buildLiveSessionCards(payload: InniesMonitorActivityPayload | null): LiveSessionCard[] {
+export function buildLiveSessionCards(payload: InniesMonitorActivityPayload | null): LiveSessionCard[] {
   if (!payload) return [];
 
   const liveSessions = payload.items.filter((item) => item.stream === 'live_sessions');
   const latestPrompts = payload.items.filter((item) => item.stream === 'latest_prompts');
 
-  return liveSessions.map((session) => ({
-    session,
-    trail: latestPrompts
-      .filter((item) => item.sessionKey === session.sessionKey)
-      .filter((item) => item.kind !== 'tool_call')
-      .filter((item) => item.kind !== 'tool_result')
-      .sort((left, right) => Date.parse(left.occurredAt) - Date.parse(right.occurredAt)),
-  }));
+  return liveSessions
+    .filter((session) => !isSyntheticArchiveLiveSession(session))
+    .map((session) => ({
+      session,
+      trail: latestPrompts
+        .filter((item) => item.sessionKey === session.sessionKey)
+        .filter((item) => item.kind !== 'tool_call')
+        .filter((item) => item.kind !== 'tool_result')
+        .sort((left, right) => Date.parse(left.occurredAt) - Date.parse(right.occurredAt)),
+    }))
+    .filter((card) => card.trail.length > 0);
 }
 
 function liveSessionCardKey(card: LiveSessionCard): string {
@@ -172,13 +180,19 @@ function EmptyStateCard(input: {
       : 'empty';
   const title = input.liveStatus === 'loading'
     ? 'Waiting for the activity feed'
-    : 'No live sessions in the current window';
+    : input.liveStatus === 'degraded'
+      ? 'Live session feed degraded'
+      : 'No live sessions in the current window';
   const detail = input.liveStatus === 'loading'
     ? 'The client is polling /api/innies/monitor/activity for the first payload.'
-    : input.error ?? 'The public live session feed has not emitted any active lanes yet.';
+    : input.liveStatus === 'degraded'
+      ? input.error ?? 'Canonical live sessions are temporarily unavailable. Archive context remains available below.'
+      : input.error ?? 'The public live session feed has not emitted any active lanes yet.';
   const meta = input.liveStatus === 'loading'
     ? `POLL ${INNIES_MONITOR_ACTIVITY_POLL_INTERVAL_MS / 1000}s`
-    : 'Awaiting active session traffic.';
+    : input.liveStatus === 'degraded'
+      ? 'Canonical feed unavailable.'
+      : 'Awaiting active session traffic.';
 
   return (
     <article className={`${styles.card} shrink-0 flex flex-col`} data-tone="neutral">

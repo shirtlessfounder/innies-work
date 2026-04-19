@@ -1,6 +1,8 @@
 import styles from '../app/page.module.css';
 import { LandingLinkIcon } from './LandingLinkIcon';
 
+type LandingProductsTableVariant = 'landing' | 'editor';
+
 type ProductLink = {
   href: string;
   kind: 'github' | 'telegram' | 'x';
@@ -63,7 +65,59 @@ const PRODUCT_ROWS: ProductRow[] = [
   },
 ];
 
-export function LandingProductsTable() {
+type LandingProductsTableProps = {
+  variant?: 'landing' | 'editor';
+};
+
+export function LandingProductsTable({ variant = 'landing' }: LandingProductsTableProps) {
+  const isEditor = variant === 'editor';
+
+  if (isEditor) {
+    return (
+      <div className={`${styles.landingTableWrap} ${styles.landingTableWrap_editor}`}>
+        <div className={styles.landingTableEditorList}>
+          <div className={styles.landingTableEditorHeaderRow}>
+            <span className={styles.landingTableEditorHeaderLabel}>product</span>
+            <span aria-hidden="true" className={styles.landingTableEditorPipe}>|</span>
+            <span className={styles.landingTableEditorHeaderLabel}>one-liner</span>
+            <span aria-hidden="true" className={styles.landingTableEditorPipe}>|</span>
+            <span className={styles.landingTableEditorHeaderLabel}>links</span>
+          </div>
+          {PRODUCT_ROWS.map((row) => (
+            <div key={row.product} className={styles.landingTableEditorRow}>
+              <a
+                className={styles.landingTableProductLink}
+                href={row.productHref}
+                rel="noreferrer"
+                target="_blank"
+              >
+                {row.product}
+              </a>
+              <span aria-hidden="true" className={styles.landingTableEditorPipe}>|</span>
+              <span>{row.oneLiner}</span>
+              <span aria-hidden="true" className={styles.landingTableEditorPipe}>|</span>
+              <span className={`${styles.landingTableLinks} ${styles.landingTableEditorLinks}`}>
+                {row.links.map((link) => (
+                  <a
+                    key={`${row.product}:${link.kind}`}
+                    aria-label={link.label}
+                    className={styles.landingTableLink}
+                    href={link.href}
+                    rel="noreferrer"
+                    target="_blank"
+                    title={link.label}
+                  >
+                    <LandingLinkIcon kind={link.kind} />
+                  </a>
+                ))}
+              </span>
+            </div>
+          ))}
+        </div>
+      </div>
+    );
+  }
+
   return (
     <div className={styles.landingTableWrap}>
       <table className={styles.landingTable}>

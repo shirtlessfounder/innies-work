@@ -6,28 +6,18 @@
 //
 // Upstream contract:
 //   GET {INNIES_API_BASE_URL}/v1/admin/me/live-sessions
-//     ?api_key_ids=<csv>&window_hours=24
+//     ?api_key_ids=<csv>&window_hours=12
 //     headers: x-api-key: {INNIES_ADMIN_API_KEY}
+
+import {
+  fetchInniesLiveFeed,
+  InniesFeedConfigError,
+  InniesFeedUpstreamError
+} from '../../../../lib/inniesLive/fetchLiveFeed';
 
 export const dynamic = 'force-dynamic';
 
-const DEFAULT_WINDOW_HOURS = 24;
-const DEFAULT_TIMEOUT_MS = 15_000;
-
-class RouteConfigError extends Error {
-  constructor(message: string) {
-    super(message);
-    this.name = 'RouteConfigError';
-  }
-}
-
-function readEnv(name: string): string {
-  const value = process.env[name];
-  if (typeof value !== 'string' || value.trim().length === 0) {
-    throw new RouteConfigError(`Missing env ${name}`);
-  }
-  return value.trim();
-}
+const DEFAULT_WINDOW_HOURS = 12;
 
 function readOptionalNumber(raw: string | null): number | null {
   if (!raw) return null;
@@ -38,59 +28,29 @@ function readOptionalNumber(raw: string | null): number | null {
 
 export async function GET(request: Request) {
   try {
-    const baseUrl = readEnv('INNIES_API_BASE_URL');
-    const adminApiKey = readEnv('INNIES_ADMIN_API_KEY');
-    const apiKeyIds = readEnv('INNIES_MONITOR_API_KEY_IDS');
-
     const url = new URL(request.url);
     const windowHours =
       readOptionalNumber(url.searchParams.get('window_hours')) ?? DEFAULT_WINDOW_HOURS;
 
-    const upstream = new URL('/v1/admin/me/live-sessions', `${baseUrl}/`);
-    upstream.searchParams.set('api_key_ids', apiKeyIds);
-    upstream.searchParams.set('window_hours', String(windowHours));
-
-    const controller = new AbortController();
-    const timeout = setTimeout(() => controller.abort(), DEFAULT_TIMEOUT_MS);
-
-    let response: Response;
-    try {
-      response = await fetch(upstream, {
-        method: 'GET',
-        headers: {
-          'x-api-key': adminApiKey,
-          accept: 'application/json'
-        },
-        cache: 'no-store',
-        signal: controller.signal
-      });
-    } finally {
-      clearTimeout(timeout);
-    }
-
-    if (!response.ok) {
-      const body = await response.text();
-      return Response.json(
-        {
-          code: 'upstream_error',
-          message: `Upstream ${response.status}: ${body.slice(0, 500)}`
-        },
-        {
-          status: response.status === 401 || response.status === 403 ? 502 : response.status,
-          headers: { 'cache-control': 'no-store' }
-        }
-      );
-    }
-
-    const payload = await response.json();
+    const payload = await fetchInniesLiveFeed({ windowHours });
     return Response.json(payload, {
       headers: { 'cache-control': 'no-store' }
     });
   } catch (error) {
-    if (error instanceof RouteConfigError) {
+    if (error instanceof InniesFeedConfigError) {
       return Response.json(
         { code: 'config_error', message: error.message },
         { status: 503, headers: { 'cache-control': 'no-store' } }
+      );
+    }
+
+    if (error instanceof InniesFeedUpstreamError) {
+      return Response.json(
+        { code: 'upstream_error', message: error.message },
+        {
+          status: error.status === 401 || error.status === 403 ? 502 : error.status,
+          headers: { 'cache-control': 'no-store' }
+        }
       );
     }
 

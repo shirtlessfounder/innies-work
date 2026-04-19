@@ -4,6 +4,7 @@ import { useCallback, useEffect, useMemo, useRef, useState } from 'react';
 import { useMyInniesSessions } from '../../hooks/useMyInniesSessions';
 import { SessionPanel } from './SessionPanel';
 import styles from './sessionsBoard.module.css';
+import type { InniesLiveFeed } from '../../lib/inniesLive/feedTypes';
 
 const STATUS_LABEL: Record<string, string> = {
   loading: 'connecting',
@@ -23,8 +24,12 @@ function formatGeneratedAt(value: string | null): string {
   }).format(ts);
 }
 
-export function SessionsBoard() {
-  const { feed, status, error, lastUpdatedAt, refresh } = useMyInniesSessions();
+type SessionsBoardProps = {
+  initialFeed?: InniesLiveFeed | null;
+};
+
+export function SessionsBoard({ initialFeed = null }: SessionsBoardProps = {}) {
+  const { feed, status, error, lastUpdatedAt, refresh } = useMyInniesSessions({ initialFeed });
   const scrollRef = useRef<HTMLDivElement | null>(null);
   const [canScrollLeft, setCanScrollLeft] = useState(false);
   const [canScrollRight, setCanScrollRight] = useState(false);
@@ -123,7 +128,7 @@ export function SessionsBoard() {
 
       {sessions.length === 0 && status !== 'loading' ? (
         <div className={styles.empty}>
-          {'//'} no live innies sessions in the last {feed?.windowHours ?? 24}h. start an{' '}
+          {'//'} no live innies sessions in the last {feed?.windowHours ?? 12}h. start an{' '}
           <code>innies codex</code> or <code>innies claude</code> session — new blocks appear automatically.
         </div>
       ) : (

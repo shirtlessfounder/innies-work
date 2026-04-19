@@ -25,15 +25,10 @@ test('project scaffold files exist', () => {
   assert.equal(existsSync(fileUrl('src/app/site.webmanifest')), true);
 });
 
-test('landing page keeps the hero artwork static and renders the placeholder form', () => {
-  const pageSource = readSource('src/app/page.tsx');
-
-  assert.ok(pageSource.includes('className={styles.frame}'));
-  assert.ok(!pageSource.includes('href="/innies"'));
-  assert.ok(pageSource.includes('<LandingHeroHeader'));
-  assert.ok(pageSource.includes('<PlaceholderOrgCreationForm'));
-  assert.ok(!pageSource.includes('brandSuffix="(BETA)"'));
-});
+// Removed: 'landing page keeps the hero artwork static and renders the placeholder form'
+// The / route now renders VscodeShell with the Shirtless Founder hero content
+// (LandingHeroHeader / PlaceholderOrgCreationForm are no longer mounted on /).
+// See PR #5 + src/app/page.tsx.
 
 test('landing header keeps the welcome title and command animation targets', () => {
   const headerSource = readSource('src/components/LandingHeroHeader.tsx');
@@ -80,11 +75,9 @@ test('landing link block removes the input and create-org button', () => {
   assert.ok(!formSource.includes('https://github.com/shirtlessfounder/innies'));
 });
 
-test('landing page renders a products table under the link row', () => {
-  const pageSource = readSource('src/app/page.tsx');
-
-  assert.ok(pageSource.includes('<LandingProductsTable />'));
-});
+// Removed: 'landing page renders a products table under the link row'
+// Replaced by the Shirtless Founder hero + product list rendered inline in
+// src/app/page.tsx (PR #5). LandingProductsTable is no longer mounted on /.
 
 test('landing products table contains the approved headers and product rows', () => {
   const tableSource = readSource('src/components/LandingProductsTable.tsx');

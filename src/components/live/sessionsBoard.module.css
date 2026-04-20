@@ -324,7 +324,7 @@
 @media (max-width: 767px) {
   .panel {
     padding-right: 0.75rem;
-    max-height: none;
+    max-height: calc(100dvh - 12rem);
   }
 
   .panel + .panel {

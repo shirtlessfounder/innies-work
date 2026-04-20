@@ -2,16 +2,9 @@
 
 export const ACTIVITY_BAR_WIDTH = 40;
 
-export function ActivityBar() {
-  return (
-    <div
-      className="flex flex-col items-center pt-2"
-      style={{
-        width: `${ACTIVITY_BAR_WIDTH}px`,
-        backgroundColor: '#0E0E0E',
-        flexShrink: 0
-      }}
-    >
+export function ActivityBar({ onToggleExplorer }: { onToggleExplorer?: () => void } = {}) {
+  const icons = (
+    <>
       <div className="relative mb-2">
         <div className="absolute left-0 top-0 bottom-0 w-0.5 bg-white" />
         <div className="w-10 h-10 flex items-center justify-center opacity-100">
@@ -47,6 +40,32 @@ export function ActivityBar() {
           <rect x="9" y="9" width="6" height="6" fill="#C5C5C5" />
         </svg>
       </div>
+    </>
+  );
+
+  const style = {
+    width: `${ACTIVITY_BAR_WIDTH}px`,
+    backgroundColor: '#0E0E0E',
+    flexShrink: 0
+  };
+
+  if (onToggleExplorer) {
+    return (
+      <button
+        type="button"
+        onClick={onToggleExplorer}
+        aria-label="Toggle file explorer"
+        className="flex h-screen flex-col items-center pt-2 bg-transparent border-0 p-0 cursor-pointer"
+        style={style}
+      >
+        {icons}
+      </button>
+    );
+  }
+
+  return (
+    <div className="flex flex-col items-center pt-2" style={style}>
+      {icons}
     </div>
   );
 }

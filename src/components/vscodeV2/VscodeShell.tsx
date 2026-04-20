@@ -5,6 +5,7 @@ import { useEffect, useRef, useState } from 'react';
 import { Footer } from './Footer';
 import { Header } from './Header';
 import { LineNumbers } from './LineNumbers';
+import { ACTIVITY_BAR_WIDTH } from './ActivityBar';
 import { Sidebar } from './Sidebar';
 import { TabContent } from './TabContent';
 import { STATIC_TABS, type VscodeTab } from './TabBar';
@@ -42,6 +43,8 @@ export function VscodeShell({ children, initialLiveFeed = null }: VscodeShellPro
   const [sidebarWidth, setSidebarWidth] = useState(300);
   const [isResizingSidebar, setIsResizingSidebar] = useState(false);
   const [lineCount, setLineCount] = useState(1);
+  const [isMobile, setIsMobile] = useState(false);
+  const [isExplorerOpen, setIsExplorerOpen] = useState(true);
   const mainRef = useRef<HTMLElement>(null);
   const contentRef = useRef<HTMLDivElement>(null);
   const resizeStartXRef = useRef(0);
@@ -53,6 +56,21 @@ export function VscodeShell({ children, initialLiveFeed = null }: VscodeShellPro
     if (initialTab) {
       setActiveTab(initialTab);
     }
+  }, []);
+
+  useEffect(() => {
+    const mq = window.matchMedia('(max-width: 767px)');
+    const update = () => {
+      setIsMobile(mq.matches);
+      if (mq.matches) {
+        setIsExplorerOpen(false);
+      } else {
+        setIsExplorerOpen(true);
+      }
+    };
+    update();
+    mq.addEventListener('change', update);
+    return () => mq.removeEventListener('change', update);
   }, []);
 
   useEffect(() => {
@@ -126,14 +144,22 @@ export function VscodeShell({ children, initialLiveFeed = null }: VscodeShellPro
     document.body.style.userSelect = 'none';
   };
 
+  const mainMarginLeft = isMobile ? ACTIVITY_BAR_WIDTH : sidebarWidth;
+
   return (
     <div className="min-h-screen text-white" style={{ backgroundColor: '#1F1F1F' }}>
-      <Sidebar width={sidebarWidth} onResizeStart={startSidebarResize} />
+      <Sidebar
+        width={sidebarWidth}
+        onResizeStart={startSidebarResize}
+        isMobile={isMobile}
+        isExplorerOpen={isExplorerOpen}
+        onToggleExplorer={() => setIsExplorerOpen((prev) => !prev)}
+      />
 
       <main
         ref={mainRef}
         className="h-screen overflow-y-auto"
-        style={{ marginLeft: `${sidebarWidth}px`, paddingBottom: '28px' }}
+        style={{ marginLeft: `${mainMarginLeft}px`, paddingBottom: '28px' }}
       >
         <Header activeTab={activeTab} onTabSelect={setActiveTab} />
         <div className="flex">
@@ -142,7 +168,7 @@ export function VscodeShell({ children, initialLiveFeed = null }: VscodeShellPro
             ref={contentRef}
             className={
               showShellLineNumbers
-                ? 'min-w-0 flex-1 px-8 py-12'
+                ? 'min-w-0 flex-1 pl-2 pr-8 md:px-8 py-12'
                 : 'min-w-0 flex-1'
             }
           >

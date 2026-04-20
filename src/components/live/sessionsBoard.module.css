@@ -320,3 +320,33 @@
   padding-top: 0.75rem;
   padding-bottom: 0.25rem;
 }
+
+@media (max-width: 767px) {
+  .panel {
+    padding-right: 0.75rem;
+    max-height: none;
+  }
+
+  .panel + .panel {
+    padding-left: 0.75rem;
+  }
+
+  .entryRow {
+    grid-template-columns: 3.5rem 1fr;
+    gap: 0.25ch;
+  }
+
+  .entryLabel {
+    font-size: 12px;
+  }
+
+  .entryText {
+    font-size: 13px;
+  }
+
+  .refreshButton,
+  .navButton {
+    font-size: 12px;
+    padding: 0.1rem 0.45rem;
+  }
+}

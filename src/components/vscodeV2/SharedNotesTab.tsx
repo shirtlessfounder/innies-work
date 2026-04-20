@@ -1,6 +1,7 @@
 'use client';
 
 import { useEffect, useRef, useState } from 'react';
+import { MobileSharedNotesEditor } from './MobileSharedNotesEditor';
 import { MonacoSharedNotesEditor } from './MonacoSharedNotesEditor';
 
 type SharedNotesDocument = {
@@ -50,6 +51,7 @@ export function SharedNotesTab() {
   const [status, setStatus] = useState('loading...');
   const [hasRemoteUpdate, setHasRemoteUpdate] = useState(false);
   const [lastSavedAt, setLastSavedAt] = useState<string | null>(null);
+  const [isMobile, setIsMobile] = useState(false);
   const contentRef = useRef(content);
   const revisionRef = useRef(revision);
   const dirtyRef = useRef(false);
@@ -71,6 +73,14 @@ export function SharedNotesTab() {
   useEffect(() => {
     dirtyRef.current = isDirty;
   }, [isDirty]);
+
+  useEffect(() => {
+    const mq = window.matchMedia('(max-width: 767px)');
+    const update = () => setIsMobile(mq.matches);
+    update();
+    mq.addEventListener('change', update);
+    return () => mq.removeEventListener('change', update);
+  }, []);
 
   persistSharedNotesRef.current = async ({
     immediate = false,
@@ -297,8 +307,10 @@ export function SharedNotesTab() {
     };
   }, [content, hasRemoteUpdate, isDirty]);
 
+  const Editor = isMobile ? MobileSharedNotesEditor : MonacoSharedNotesEditor;
+
   return (
-    <MonacoSharedNotesEditor
+    <Editor
       lastSavedAt={lastSavedAt}
       onBlur={() => {
         void persistSharedNotesRef.current({ immediate: true });

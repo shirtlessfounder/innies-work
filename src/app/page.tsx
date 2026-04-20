@@ -23,11 +23,11 @@ export default function DashboardIndexPage() {
       <div className="max-w-5xl">
         <h1
           aria-label="Shirtless Founder"
-          className={`${safiroMedium.className} inline-flex items-center gap-[0.2em] text-7xl font-normal leading-none`}
+          className={`${safiroMedium.className} inline-flex items-center gap-[0.2em] text-3xl md:text-7xl font-normal leading-none`}
         >
           <span>Shirtless</span>
           <span>Founder</span>
-          <span className="relative inline-block h-16 w-16 shrink-0 overflow-hidden rounded-full">
+          <span className="relative inline-block h-7 w-7 md:h-16 md:w-16 shrink-0 overflow-hidden rounded-full">
             <Image
               src="/vscode-v2/images/shirtless-founder-avatar.jpeg"
               alt="Shirtless Founder portrait"

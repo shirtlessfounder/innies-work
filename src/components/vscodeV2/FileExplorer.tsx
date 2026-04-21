@@ -348,7 +348,7 @@ export function FileExplorer() {
   ];
   const activeclawHermesEntries: ProjectEntry[] = [
     {
-      href: 'https://www.combinator.trade/launch-agent',
+      href: 'https://slate-sal.exe.xyz/hermes-provisioner/',
       icon: 'globe',
       name: 'slate-agent.com/launch'
     },

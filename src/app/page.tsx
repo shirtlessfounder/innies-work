@@ -39,8 +39,8 @@ export default function DashboardIndexPage() {
           </span>
         </h1>
         <p className="mt-7 text-[14px] text-gray-500" style={monoStyle}>{'//'}Mission</p>
-        <p className="mt-1 text-[14px] text-gray-300" style={monoStyle}>I&apos;m building AI infrastructure that amplifies the uniqueness of each individual human&apos;s output, expanding its depth and breadth.</p>
-        <p className="mt-[26px] text-[14px] text-gray-500" style={monoStyle}>{'//'}Try out and <a href="https://t.me/shirtlessfounder" target="_blank" rel="noopener noreferrer" className={productLinkClassName}>ask me</a> about any of these products:</p>
+        <p className="mt-1 text-[14px] text-gray-300" style={monoStyle}>We&apos;re building the infrastructure that captures who a specific person is and injects that representation into AI systems, so that AI will act on their behalf to extend them.</p>
+        <p className="mt-[26px] text-[14px] text-gray-500" style={monoStyle}>{'//'}Try out and <a href="https://t.me/shirtlessfounder" target="_blank" rel="noopener noreferrer" className={productLinkClassName}>ask me</a> about any of these highlighted projects (all other projects are on the left sidebar)</p>
         <p className="mt-0.5 text-[14px] text-gray-300" style={monoStyle}>Product | One-liner | Links</p>
         <p className="mt-0.5 text-[14px] text-gray-300" style={monoStyle}>--- | --- | ---</p>
         <p className="mt-1 text-[14px] text-gray-300" style={monoStyle}>talk-to-my-agent | ask my agent questions about what it&apos;s up to or vibe with its personality | <a href="https://t.me/shirtlessfounder" target="_blank" rel="noopener noreferrer" className={productLinkClassName}>[telegram]</a></p>

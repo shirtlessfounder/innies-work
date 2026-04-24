@@ -5,7 +5,7 @@ import { FaXTwitter } from 'react-icons/fa6';
 import { TbBrandTelegram } from 'react-icons/tb';
 import { useRef, useState, type Ref } from 'react';
 
-type ExpandableFolderKey = 'projects' | 'auto-biographer' | 'slate-agent' | 'innies' | 'combinator' | 'agent-meets' | 'old-builds' | 'moltmarkets' | 'links' | 'output' | 'socials' | 'personal' | 'friends' | 'hands' | 'oogway' | 'aelix';
+type ExpandableFolderKey = 'projects' | 'auto-biographer' | 'slate-agent' | 'innies' | 'combinator' | 'agent-meets' | 'one-offs' | 'moltmarkets' | 'token-burner' | 'links' | 'output' | 'socials' | 'personal' | 'friends' | 'hands' | 'oogway' | 'aelix';
 type ExplorerIconName = 'file' | 'globe' | 'github' | 'x' | 'telegram' | 'substack' | 'goodreads' | 'soundcloud' | 'spotify';
 
 type ExplorerLink = {
@@ -425,6 +425,18 @@ export function FileExplorer() {
       name: 'moltmarkets-agent-skill.git'
     }
   ];
+  const tokenBurnerEntries: ProjectEntry[] = [
+    {
+      href: 'https://www.token-burner.tech/',
+      icon: 'globe',
+      name: 'token-burner.tech'
+    },
+    {
+      href: 'https://github.com/shirtlessfounder/token-burner',
+      icon: 'github',
+      name: 'token-burner.git'
+    }
+  ];
   const linkFolders: LinkFolder[] = [
     {
       folderKey: 'output',
@@ -487,8 +499,9 @@ export function FileExplorer() {
     innies: false,
     combinator: false,
     'agent-meets': false,
-    'old-builds': false,
+    'one-offs': false,
     moltmarkets: false,
+    'token-burner': false,
     links: true,
     output: true,
     socials: true,
@@ -690,14 +703,14 @@ export function FileExplorer() {
               )}
 
               <FolderRow
-                name="old-builds"
+                name="one-offs"
                 indentClass="pl-4"
                 marginClass="mt-1"
-                expanded={expandedFolders['old-builds']}
-                onClick={() => toggleFolder('old-builds')}
+                expanded={expandedFolders['one-offs']}
+                onClick={() => toggleFolder('one-offs')}
               />
 
-              {expandedFolders['old-builds'] && (
+              {expandedFolders['one-offs'] && (
                 <div>
                   <FolderRow
                     name="moltmarkets"
@@ -718,6 +731,26 @@ export function FileExplorer() {
                           indentClass="pl-14"
                           onHoverEnd={clearHoveredProjectEntry}
                           onHoverStart={setMoltmarketsTooltip}
+                        />
+                      ))}
+                    </div>
+                  )}
+
+                  <FolderRow
+                    name="token-burner"
+                    indentClass="pl-9"
+                    marginClass="mt-1"
+                    expanded={expandedFolders['token-burner']}
+                    onClick={() => toggleFolder('token-burner')}
+                  />
+
+                  {expandedFolders['token-burner'] && (
+                    <div>
+                      {tokenBurnerEntries.map((entry) => (
+                        <ProjectEntryRow
+                          key={entry.name}
+                          entry={entry}
+                          indentClass="pl-14"
                         />
                       ))}
                     </div>
